@@ -359,6 +359,13 @@
 	            '-moz-transform': 'rotate(' + that.actualRotation + 'deg)',
 	            'transform': 'rotate(' + that.actualRotation + 'deg)',
 	        });
+	        if(that.options.imgEyecandy) {
+	            that.imgEyecandy.css({
+	                '-webkit-transform': 'rotate(' + that.actualRotation + 'deg)',
+	                '-moz-transform': 'rotate(' + that.actualRotation + 'deg)',
+	                'transform': 'rotate(' + that.actualRotation + 'deg)',
+	            });
+	        }
 	        if (typeof that.options.onImgRotate == 'function')
 	            that.options.onImgRotate.call(that);
 	    },

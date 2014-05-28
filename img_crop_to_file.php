@@ -12,6 +12,7 @@ $imgY1 = $_POST['imgY1'];
 $imgX1 = $_POST['imgX1'];
 $cropW = $_POST['cropW'];
 $cropH = $_POST['cropH'];
+$angle = $_POST['rotation'];
 
 $jpeg_quality = 100;
 
@@ -37,22 +38,24 @@ switch(strtolower($what['mime']))
         break;
     default: die('image type not supported');
 }
-	
+
 	$resizedImage = imagecreatetruecolor($imgW, $imgH);
-	imagecopyresampled($resizedImage, $source_image, 0, 0, 0, 0, $imgW, 
-				$imgH, $imgInitW, $imgInitH);	
-	
-	
+	imagecopyresampled($resizedImage, $source_image, 0, 0, 0, 0, $imgW,
+				$imgH, $imgInitW, $imgInitH);
+
+
 	$dest_image = imagecreatetruecolor($cropW, $cropH);
-	imagecopyresampled($dest_image, $resizedImage, 0, 0, $imgX1, $imgY1, $cropW, 
-				$cropH, $cropW, $cropH);	
+	imagecopyresampled($dest_image, $resizedImage, 0, 0, $imgX1, $imgY1, $cropW,
+				$cropH, $cropW, $cropH);
 
+	// image rotation
+    $rotated_image = imagerotate($dest_image, $angle, 0);
 
-	imagejpeg($dest_image, $output_filename.$type, $jpeg_quality);
-	
+	imagejpeg($rotated_image, $output_filename.$type, $jpeg_quality);
+
 	$response = array(
 			"status" => 'success',
-			"url" => $output_filename.$type 
+			"url" => $output_filename.$type
 		  );
 	 print json_encode($response);
 
