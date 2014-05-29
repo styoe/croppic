@@ -74,6 +74,8 @@
 			.cropControls i.cropControlZoomIn{ background-position:-30px 0px; }
 			.cropControls i.cropControlZoomOut{ background-position:-60px 0px; }
 			.cropControls i.cropControlZoomMuchOut{ background-position:-90px 0px; }
+			.cropControls i.cropControlRotateLeft{ background-position:-210px 0px; }
+			.cropControls i.cropControlRotateRight{ background-position:-240px 0px; }
 			.cropControls i.cropControlCrop{ background-position:-120px 0px;}
 			.cropControls i.cropControlUpload{ background-position:-150px 0px;}
 			.cropControls i.cropControlReset{ background-position:-180px 0px;}
