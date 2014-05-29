@@ -480,8 +480,9 @@
 				}).always(function(data){
 					response = jQuery.parseJSON(data);
 					if(response.status=='success'){
-						
-						that.imgEyecandy.hide();
+					    // FIX: check if Eyecandy is active
+						if (that.options.imgEyecandy)
+						    that.imgEyecandy.hide();
 						
 						that.destroy();
 						
