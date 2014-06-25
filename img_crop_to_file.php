@@ -15,45 +15,43 @@ $cropH = $_POST['cropH'];
 
 $jpeg_quality = 100;
 
-$output_filename = "temp/croppedImg_".rand();
-
 $what = getimagesize($imgUrl);
 switch(strtolower($what['mime']))
 {
     case 'image/png':
-        $img_r = imagecreatefrompng($imgUrl);
 		$source_image = imagecreatefrompng($imgUrl);
-		$type = '.png';
         break;
     case 'image/jpeg':
-        $img_r = imagecreatefromjpeg($imgUrl);
 		$source_image = imagecreatefromjpeg($imgUrl);
-		$type = '.jpeg';
         break;
     case 'image/gif':
-        $img_r = imagecreatefromgif($imgUrl);
 		$source_image = imagecreatefromgif($imgUrl);
-		$type = '.gif';
         break;
-    default: die('image type not supported');
+    default:
+        echo json_encode(array(
+            'success' => false,
+            'message' => 'image type not supported',
+        ));
+        return;
 }
 	
-	$resizedImage = imagecreatetruecolor($imgW, $imgH);
-	imagecopyresampled($resizedImage, $source_image, 0, 0, 0, 0, $imgW, 
-				$imgH, $imgInitW, $imgInitH);	
-	
-	
-	$dest_image = imagecreatetruecolor($cropW, $cropH);
-	imagecopyresampled($dest_image, $resizedImage, 0, 0, $imgX1, $imgY1, $cropW, 
-				$cropH, $cropW, $cropH);	
+$resizedImage = imagecreatetruecolor($imgW, $imgH);
+imagecopyresampled($resizedImage, $source_image, 0, 0, 0, 0, $imgW,
+            $imgH, $imgInitW, $imgInitH);
 
 
-	imagejpeg($dest_image, $output_filename.$type, $jpeg_quality);
-	
-	$response = array(
-			"status" => 'success',
-			"url" => $output_filename.$type 
-		  );
-	 print json_encode($response);
+$dest_image = imagecreatetruecolor($cropW, $cropH);
+imagecopyresampled($dest_image, $resizedImage, 0, 0, $imgX1, $imgY1, $cropW,
+            $cropH, $cropW, $cropH);
 
-?>
+
+ob_start();
+imagejpeg($dest_image, null, $jpeg_quality);
+$imgData = ob_get_clean();
+ob_end_clean();
+
+$response = array(
+    "status" => 'success',
+    "url" => 'data:'.$what['mime'].';base64,'.base64_encode($imgData),
+  );
+ echo json_encode($response);
