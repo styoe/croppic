@@ -313,7 +313,7 @@
 		},
 		zoom :function(x){
 			var that = this;
-			var ratio = that.imgW / that.imgH;
+			var ratio = that.imgInitW / that.imgInitH;
 			var newWidth = that.imgW+x;
 			var newHeight = newWidth/ratio;
 			var doPositioning = true;
