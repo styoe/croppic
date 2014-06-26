@@ -12,6 +12,7 @@ $imgY1 = $_POST['imgY1'];
 $imgX1 = $_POST['imgX1'];
 $cropW = $_POST['cropW'];
 $cropH = $_POST['cropH'];
+$angle = $_POST['rotation'];
 
 $jpeg_quality = 100;
 
@@ -34,24 +35,37 @@ switch(strtolower($what['mime']))
         ));
         return;
 }
-	
+
+// resize the original image to size of editor
 $resizedImage = imagecreatetruecolor($imgW, $imgH);
-imagecopyresampled($resizedImage, $source_image, 0, 0, 0, 0, $imgW,
-            $imgH, $imgInitW, $imgInitH);
+imagecopyresampled($resizedImage, $source_image, 0, 0, 0, 0, $imgW, $imgH, $imgInitW, $imgInitH);
 
+// rotate the rezized image
+$rotated_image = imagerotate($resizedImage, -$angle, 0);
+// find new width & height of rotated image
+$rotated_width = imagesx($rotated_image);
+$rotated_height = imagesy($rotated_image);
+// diff between rotated & original sizes
+$dx = $rotated_width - $imgW;
+$dy = $rotated_height - $imgH;
 
-$dest_image = imagecreatetruecolor($cropW, $cropH);
-imagecopyresampled($dest_image, $resizedImage, 0, 0, $imgX1, $imgY1, $cropW,
-            $cropH, $cropW, $cropH);
+// crop rotated image to fit into original rezized rectangle
+$cropped_rotated_image = imagecreatetruecolor($imgW, $imgH);
+imagecolortransparent($cropped_rotated_image, imagecolorallocate($cropped_rotated_image, 0, 0, 0));
+imagecopyresampled($cropped_rotated_image, $rotated_image, 0, 0, $dx / 2, $dy / 2, $imgW, $imgH, $imgW, $imgH);
 
+// crop image into selected area
+$final_image = imagecreatetruecolor($cropW, $cropH);
+imagecolortransparent($final_image, imagecolorallocate($final_image, 0, 0, 0));
+imagecopyresampled($final_image, $cropped_rotated_image, 0, 0, $imgX1, $imgY1, $cropW, $cropH, $cropW, $cropH);
 
 ob_start();
-imagejpeg($dest_image, null, $jpeg_quality);
+imagejpeg($final_image, null, $jpeg_quality);
 $imgData = ob_get_clean();
 ob_end_clean();
 
 $response = array(
     "status" => 'success',
     "url" => 'data:'.$what['mime'].';base64,'.base64_encode($imgData),
-  );
- echo json_encode($response);
+);
+echo json_encode($response);
