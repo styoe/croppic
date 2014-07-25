@@ -8,6 +8,8 @@
  * 1) On initialising it preloads the image thats on the server. If this is an uncropped image it will load the cropper instead of the uploader.
  * 2) If FormData is inaccessible it will use an iframe as fallback
  * 3) Added initialzoom option and other necessary options
+ * 4) I also removed the reset button, as it had no function in my script. People just have to crop, after that, they can upload again. 
+ * 5) Lastly: my asp.net web api doesn't return parseable json, but an array, so I changed the way the response is read after ajax calls.
  */
 
 (function (window, document) {
@@ -93,19 +95,10 @@
                 $.ajax({
                     url: that.options.getUrl,
                     type: 'GET'
-                }).always(function (data) {
+                }).always(function (response) {
                     
-                    var JsonString = "";
-                    if (data[0] == "Success") {
-                        JsonString = '{ "status" : "success", "url": "' + data[1] + '", "width":' + data[2] + ', "height":' + data[3] + ', "imgclass":"' + data[4] + '" }';
-                    }
-                    else {
-                        JsonString = '{ "status" : "notfound"}';
-                    }
-
-                    response = jQuery.parseJSON(JsonString);
-                    if (response.status == 'success') {
-                        $("<img src='" + response.url + "' width='" + response.width + "' height='" + response.height + "' class='" + response.imgclass + "' alt=''/>").appendTo("#croppic");
+                    if (response[0] == 'Success') {
+                        $("<img src='" + response[1] + "' width='" + response[2] + "' height='" + response[3] + "' class='" + response[4] + "' alt=''/>").appendTo("#croppic");
                     }                        
                                         
                     if (typeof callback == "function") { callback(); }
@@ -153,7 +146,7 @@
 
             if ($.isEmptyObject(that.croppedImg)) { cropControlRemoveCroppedImage = ''; }
 
-            var html = '<div class="cropControls cropControlsUpload"> ' + cropControlUpload /*+ cropControlRemoveCroppedImage*/ + ' </div>';
+            var html = '<div class="cropControls cropControlsUpload"> ' + cropControlUpload  + ' </div>';
             that.outputDiv.append(html);
 
             that.cropControlsUpload = that.outputDiv.find('.cropControlsUpload');
@@ -161,9 +154,6 @@
             if (that.options.customUploadButtonId === '') { that.imgUploadControl = that.outputDiv.find('.cropControlUpload'); }
             else { that.imgUploadControl = $('#' + that.options.customUploadButtonId); that.imgUploadControl.show(); }
 
-            if (!$.isEmptyObject(that.croppedImg)) {
-                //that.cropControlRemoveCroppedImage = that.outputDiv.find('.cropControlRemoveCroppedImage');
-            }
 
         },
         bindImgUploadControl: function () {
@@ -187,22 +177,6 @@
                     that.iframeform.find('input[type="file"]').trigger('click');
                 }
             });
-
-            if (!$.isEmptyObject(that.croppedImg)) {
-
-                //that.cropControlRemoveCroppedImage.on('click', function () {
-                //    that.croppedImg.remove();
-                //    $(this).hide();
-
-                //    if (!$.isEmptyObject(that.defaultImg)) {
-                //        that.obj.append(that.defaultImg);
-                //    }
-
-                //    if (that.options.outputUrlId !== '') { $('#' + that.options.outputUrlId).val(''); }
-
-                //});
-
-            }
 
             that.form.find('input[type="file"]').change(function () {
 
@@ -236,29 +210,20 @@
             });
 
         },
-        afterUpload: function(data){
+        afterUpload: function (response) {
             var that = this;
 
-            var JsonString = "";
-            if (data[0] == "Success") {
-                JsonString = '{ "status" : "success", "url": "' + data[1] + '", "width":' + data[2] + ', "height":' + data[3] + '}';
-            }
-            else {
-                JsonString = '{ "status" : "error", "message": "' + data[1] + '"}';
-            }
+            if (response[0] == 'Success') {
 
-            response = jQuery.parseJSON(JsonString);
-            if (response.status == 'success') {
-
-                that.imgInitW = that.imgW = response.width;
-                that.imgInitH = that.imgH = response.height;
+                that.imgInitW = that.imgW = response[2];
+                that.imgInitH = that.imgH = response[3];
 
                 if (that.options.modal) { that.createModal(); }
                 if (!$.isEmptyObject(that.croppedImg)) { that.croppedImg.remove(); }
 
-                that.imgUrl = response.url;
+                that.imgUrl = response[1];
 
-                that.obj.append('<img src="' + response.url + '">');
+                that.obj.append('<img src="' + response[1] + '">');
                 that.initCropper();
 
                 that.hideLoader();
@@ -267,8 +232,8 @@
 
             }
 
-            if (response.status == 'error') {
-                that.obj.append('<p style="width:100%; height:100%; text-align:center; line-height:' + that.objH + 'px;">' + response.message + '</p>');
+            if (response[0] == 'Error') {
+                that.obj.append('<p style="width:100%; height:100%; text-align:center; line-height:' + that.objH + 'px;">' + response[1] + '</p>');
                 that.hideLoader();
                 setTimeout(function () { that.reset(); }, 2000)
             }
@@ -337,13 +302,12 @@
             var cropControlZoomIn = '<i class="cropControlZoomIn"></i>';
             var cropControlZoomOut = '<i class="cropControlZoomOut"></i>';
             var cropControlZoomMuchOut = '<i class="cropControlZoomMuchOut"></i>';
-            var cropControlCrop = '<i class="cropControlCrop"></i>';
-            //var cropControlReset = '<i class="cropControlReset"></i>'; //Mod: reset button cannot be used, because it has no function 
+            var cropControlCrop = '<i class="cropControlCrop"></i>';            
 
             var html;
 
             if (that.options.doubleZoomControls) { html = '<div class="cropControls cropControlsCrop">' + cropControlZoomMuchIn + cropControlZoomIn + cropControlZoomOut + cropControlZoomMuchOut + cropControlCrop /*+ cropControlReset*/ + '</div>'; }
-            else { html = '<div class="cropControls cropControlsCrop">' + cropControlZoomIn + cropControlZoomOut + cropControlCrop /*+ cropControlReset*/ + '</div>'; }
+            else { html = '<div class="cropControls cropControlsCrop">' + cropControlZoomIn + cropControlZoomOut + cropControlCrop  + '</div>'; }
 
             that.obj.append(html);
 
@@ -366,10 +330,6 @@
 
             that.cropControlCrop = that.cropControlsCrop.find('.cropControlCrop');
             that.cropControlCrop.on('click', function () { that.crop(); });
-
-            //that.cropControlReset = that.cropControlsCrop.find('.cropControlReset');
-            //that.cropControlReset.on('click', function () { that.reset(); });
-
         },
         initDrag: function () {
             var that = this;
@@ -499,22 +459,7 @@
                 cropH: that.objH,
                 cropW: that.objW
             };
-
-            //Form data is unnecessary for this step, so ignore, use querystrings instead
-            //var formData = new FormData();
-
-            //for (var key in cropData) {
-            //    if (cropData.hasOwnProperty(key)) {
-            //        formData.append(key, cropData[key]);
-            //    }
-            //}
-
-            //for (var key in that.options.cropData) {
-            //    if (that.options.cropData.hasOwnProperty(key)) {
-            //        formData.append(key, that.options.cropData[key]);
-            //    }
-            //}
-
+                     
             var Querystring = "";
             for (var key in cropData) {
                 if (cropData.hasOwnProperty(key)) {
@@ -529,8 +474,7 @@
             }
 
             $.ajax({
-                url: that.options.cropUrl + "?" + Querystring.substring(1) ,
-                //data: formData,
+                url: that.options.cropUrl + "?" + Querystring.substring(1),                
                 context: document.body,
                 cache: false,
                 contentType: false,
@@ -542,26 +486,17 @@
 
             });
         },
-        afterCrop: function (data) {
+        afterCrop: function (response) {
             var that = this;
-
-            var JsonString = "";
-            if (data[0] == "Success") {
-                JsonString = '{ "status" : "success", "url": "' + data[1] + '"}';
-            }
-            else {
-                JsonString = '{ "status" : "error", "message": "' + data[1] + '"}';
-            }
-
-            response = jQuery.parseJSON(JsonString);
-            if (response.status == 'success') {
+            
+            if (response[0] == 'Success') {
 
                 that.imgEyecandy.hide();
 
                 that.destroy();
 
-                that.obj.append('<img class="croppedImg" src="' + response.url + '">');
-                if (that.options.outputUrlId !== '') { $('#' + that.options.outputUrlId).val(response.url); }
+                that.obj.append('<img class="croppedImg" src="' + response[1] + '">');
+                if (that.options.outputUrlId !== '') { $('#' + that.options.outputUrlId).val(response[1]); }
 
                 that.croppedImg = that.obj.find('.croppedImg');
 
@@ -570,8 +505,8 @@
                 that.hideLoader();
 
             }
-            if (response.status == 'error') {
-                that.obj.append('<p style="width:100%; height:100%;>' + response.message + '</p>">');
+            if (response[0] == 'Error') {
+                that.obj.append('<p style="width:100%; height:100%;>' + response[1] + '</p>">');
             }
 
             if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that);
@@ -700,12 +635,8 @@
             }
 
         },
-        SubmitFallbackIframe: function (that) {
-           
-            that.showLoader();
-            //that.obj.append(that.options.loaderHtml);
-            //that.loader = that.obj.find('.loader');
-                                    
+        SubmitFallbackIframe: function (that) {           
+            that.showLoader();                                    
             that.iframeform[0].submit();
         },
         getIframeContentJSON: function (iframe) {
