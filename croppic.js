@@ -403,6 +403,7 @@
 		},
 		crop:function(){
 			var that = this;
+			that.imgEyecandy = that.img.clone();
 			
 			if (that.options.onBeforeImgCrop) that.options.onBeforeImgCrop.call(that);
 			
