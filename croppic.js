@@ -184,9 +184,10 @@
 
                 that.showLoader();
                 that.imgUploadControl.hide();
+                                
+                var formData = new FormData(); //Change for IE10                
+                formData.append('file', that.form.find("input[type=file]")[0].files[0]);
                 
-                var formData = new FormData(that.form[0]);
-
                 for (var key in that.options.uploadData) {
                     if (that.options.uploadData.hasOwnProperty(key)) {
                         formData.append(key, that.options.uploadData[key]);
@@ -442,6 +443,7 @@
         },
         crop: function () {
             var that = this;
+            that.imgEyecandy = that.img.clone();
 
             if (that.options.onBeforeImgCrop) that.options.onBeforeImgCrop.call(that);
 
