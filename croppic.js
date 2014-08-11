@@ -34,7 +34,8 @@
 			onImgDrag: null,
 			onImgZoom: null,
 			onBeforeImgCrop: null,
-			onAfterImgCrop: null
+			onAfterImgCrop: null,
+			processInline: false
 		};
 
 		// OVERWRITE DEFAULT OPTIONS
@@ -153,45 +154,72 @@
 						formData.append( key , that.options.uploadData[key] );	
 					}
 				}
-				
-				$.ajax({
-                    url: that.options.uploadUrl,
-                    data: formData,
-                    context: document.body,
-                    cache: false,
-                    contentType: false,
-                    processData: false,
-                    type: 'POST'
-				}).always(function(data){
-					response = jQuery.parseJSON(data);
-					if(response.status=='success'){
-						
-						that.imgInitW = that.imgW = response.width;
-						that.imgInitH = that.imgH = response.height;
-						
-						if(that.options.modal){	that.createModal(); }
-						if( !$.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
-						
-						that.imgUrl=response.url;
-						
-						that.obj.append('<img src="'+response.url+'">');
-						that.initCropper();
-						
-						that.hideLoader();
+				if(that.processInline){
+					//Reading Inline
+					var reader = new FileReader();
+					var imageSource = null;
+					var imageWidth = null;
+					var imageHeight = null;
+					reader.onload = function (e) {
+						var image = new Image();
+						image.src = e.target.result;
+						image.onload = function(){
+							imageWidth = image.width;
+							imageHeight = image.height;
+							imageSource = image.src;
+						}
+					};
+					reader.readAsDataURL(input[0].files[0]);
+					that.imgInitW = that.imgW = imageWidth;
+					that.imgInitH = that.imgH = imageHeight;
 
-						if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
-						
-					}
-					
-					if(response.status=='error'){
-						that.obj.append('<p style="width:100%; height:100%; text-align:center; line-height:'+that.objH+'px;">'+response.message+'</p>');
-						that.hideLoader();
-						setTimeout( function(){ that.reset(); },2000)
-					}
-					
+					if(that.options.modal){	that.createModal(); }
+					if( !$.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
 
-				});
-				
+					that.obj.append('<img src="'+response.url+'">');
+					that.initCropper();
+
+					that.hideLoader();
+
+					if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+				} else {
+					$.ajax({
+						url: that.options.uploadUrl,
+						data: formData,
+						context: document.body,
+						cache: false,
+						contentType: false,
+						processData: false,
+						type: 'POST'
+					}).always(function(data){
+						response = jQuery.parseJSON(data);
+						if(response.status=='success'){
+
+							that.imgInitW = that.imgW = response.width;
+							that.imgInitH = that.imgH = response.height;
+
+							if(that.options.modal){	that.createModal(); }
+							if( !$.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
+
+							that.imgUrl=response.url;
+
+							that.obj.append('<img src="'+response.url+'">');
+							that.initCropper();
+
+							that.hideLoader();
+
+							if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+
+						}
+
+						if(response.status=='error'){
+							that.obj.append('<p style="width:100%; height:100%; text-align:center; line-height:'+that.objH+'px;">'+response.message+'</p>');
+							that.hideLoader();
+							setTimeout( function(){ that.reset(); },2000)
+						}
+					});
+				}
+
 			});
 		
 		},
