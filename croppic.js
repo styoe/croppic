@@ -146,43 +146,39 @@
 				
 				that.showLoader();
 				that.imgUploadControl.hide();
-			
-				var formData = new FormData(that.form[0]);
-			
-				for (var key in that.options.uploadData) {
-					if( that.options.uploadData.hasOwnProperty(key) ) {
-						formData.append( key , that.options.uploadData[key] );	
-					}
-				}
-				if(that.processInline){
+
+				if(that.options.processInline){
 					//Reading Inline
 					var reader = new FileReader();
-					var imageSource = null;
-					var imageWidth = null;
-					var imageHeight = null;
 					reader.onload = function (e) {
 						var image = new Image();
 						image.src = e.target.result;
 						image.onload = function(){
-							imageWidth = image.width;
-							imageHeight = image.height;
-							imageSource = image.src;
+							that.imgInitW = that.imgW = image.width;
+							that.imgInitH = that.imgH = image.height;
+
+							if(that.options.modal){	that.createModal(); }
+							if( !$.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
+
+							that.obj.append('<img src="'+image.src+'">');
+							that.initCropper();
+
+							that.hideLoader();
+
+							if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
 						}
 					};
-					reader.readAsDataURL(input[0].files[0]);
-					that.imgInitW = that.imgW = imageWidth;
-					that.imgInitH = that.imgH = imageHeight;
+					reader.readAsDataURL(that.form.find('input[type="file"]')[0].files[0]);
 
-					if(that.options.modal){	that.createModal(); }
-					if( !$.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
-
-					that.obj.append('<img src="'+response.url+'">');
-					that.initCropper();
-
-					that.hideLoader();
-
-					if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
 				} else {
+
+					var formData = new FormData(that.form[0]);
+
+					for (var key in that.options.uploadData) {
+						if( that.options.uploadData.hasOwnProperty(key) ) {
+							formData.append( key , that.options.uploadData[key] );
+						}
+					}
 					$.ajax({
 						url: that.options.uploadUrl,
 						data: formData,
