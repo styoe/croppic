@@ -447,9 +447,7 @@
 					response = jQuery.parseJSON(data);
 					if(response.status=='success'){
 						
-						if (that.options.imgEyecandy){
-							that.imgEyecandy.hide();
-						}
+						that.imgEyecandy.hide();
 						
 						that.destroy();
 						
