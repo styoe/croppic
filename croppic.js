@@ -35,6 +35,7 @@
 			onImgZoom: null,
 			onBeforeImgCrop: null,
 			onAfterImgCrop: null,
+			customImgCrop: null,
 			processInline: false
 		};
 
@@ -159,7 +160,7 @@
 
 							if(that.options.modal){	that.createModal(); }
 							if( !$.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
-
+							that.imgOriginal = image.src;
 							that.obj.append('<img src="'+image.src+'">');
 							that.initCropper();
 
@@ -273,7 +274,6 @@
 			if(that.options.imgEyecandy){ that.imgEyecandy.css({'left': -(that.imgW -that.objW)/2, 'top': -(that.imgH -that.objH)/2, 'position':'relative'}); }
 			
 		},
-		
 		createCropControls: function(){
 			var that = this;
 			
@@ -434,6 +434,7 @@
 			that.showLoader();
 	
 			var cropData = {
+					imgOriginal:that.imgOriginal,
 					imgUrl:that.imgUrl,
 					imgInitW:that.imgInitW,
 					imgInitH:that.imgInitH,
@@ -444,54 +445,58 @@
 					cropH:that.objH,
 					cropW:that.objW
 				};
-			
-			var formData = new FormData();
 
-			for (var key in cropData) {
-				if( cropData.hasOwnProperty(key) ) {
+			if(that.options.customImgCrop){
+				that.options.customImgCrop.call(that, cropData);
+			} else {
+				//START OF NORMAL PROCESSING
+				var formData = new FormData();
+
+				for (var key in cropData) {
+					if( cropData.hasOwnProperty(key) ) {
 						formData.append( key , cropData[key] );
+					}
 				}
-			}
-			
-			for (var key in that.options.cropData) {
-				if( that.options.cropData.hasOwnProperty(key) ) {
-						formData.append( key , that.options.cropData[key] );
-				}
-			}
 
-			$.ajax({
-                url: that.options.cropUrl,
-                data: formData,
-                context: document.body,
-                cache: false,
-                contentType: false,
-                processData: false,
-                type: 'POST'
+				for (var key in that.options.cropData) {
+					if( that.options.cropData.hasOwnProperty(key) ) {
+						formData.append( key , that.options.cropData[key] );
+					}
+				}
+
+				$.ajax({
+					url: that.options.cropUrl,
+					data: formData,
+					context: document.body,
+					cache: false,
+					contentType: false,
+					processData: false,
+					type: 'POST'
 				}).always(function(data){
 					response = jQuery.parseJSON(data);
 					if(response.status=='success'){
-						
+
 						that.imgEyecandy.hide();
-						
+
 						that.destroy();
-						
+
 						that.obj.append('<img class="croppedImg" src="'+response.url+'">');
 						if(that.options.outputUrlId !== ''){	$('#'+that.options.outputUrlId).val(response.url);	}
-						
+
 						that.croppedImg = that.obj.find('.croppedImg');
 
 						that.init();
-						
+
 						that.hideLoader();
 
 					}
 					if(response.status=='error'){
 						that.obj.append('<p style="width:100%; height:100%;>'+response.message+'</p>">');
 					}
-					
 					if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that);
-				 
+
 				});
+			}
 		},
 		showLoader:function(){
 			var that = this;
