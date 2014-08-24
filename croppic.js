@@ -175,13 +175,15 @@
 						
 						that.imgUrl=response.url;
 						
-						that.obj.append('<img src="'+response.url+'">');
-						that.initCropper();
-						
-						that.hideLoader();
+						var img = $('<img src="'+response.url + "aa" +'">')
 
-						if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
-						
+						that.obj.append(img);
+
+						img.load(function(){
+							that.initCropper();
+							that.hideLoader();
+							if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+						});
 					}
 					
 					if(response.status=='error'){
