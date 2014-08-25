@@ -175,7 +175,7 @@
 						
 						that.imgUrl=response.url;
 						
-						var img = $('<img src="'+response.url + "aa" +'">')
+						var img = $('<img src="'+response.url +'">')
 
 						that.obj.append(img);
 
