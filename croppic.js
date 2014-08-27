@@ -36,7 +36,9 @@
 			onBeforeImgCrop: null,
 			onAfterImgCrop: null,
 			customImgCrop: null,
-			processInline: false
+			processInline: false,
+			modalZoomFactor: 1,
+			customOptions: {}
 		};
 
 		// OVERWRITE DEFAULT OPTIONS
@@ -222,9 +224,9 @@
 		},
 		createModal: function(){
 			var that = this;
-		
-			var marginTop = that.windowH/2-that.objH/2;
-			var modalHTML =  '<div id="croppicModal">'+'<div id="croppicModalObj" style="width:'+ that.objW +'px; height:'+ that.objH +'px; margin:0 auto; margin-top:'+ marginTop +'px; position: relative;"> </div>'+'</div>';
+
+			var marginTop = that.windowH/2-(that.objH*that.options.modalZoomFactor)/2;
+			var modalHTML =  '<div id="croppicModal">'+'<div id="croppicModalObj" style="width:'+ (that.objW * that.options.modalZoomFactor) +'px; height:'+ (that.objH * that.options.modalZoomFactor) +'px; margin:0 auto; margin-top:'+ marginTop +'px; position: relative;"> </div>'+'</div>';
 
 			$('body').append(modalHTML);
 			
@@ -244,7 +246,7 @@
 			
 			/*SET UP SOME VARS*/
 			that.img = that.obj.find('img');
-			that.img.wrap('<div class="cropImgWrapper" style="overflow:hidden; z-index:1; position:absolute; width:'+that.objW+'px; height:'+that.objH+'px;"></div>');
+			that.img.wrap('<div class="cropImgWrapper" style="overflow:hidden; z-index:1; position:absolute; width:'+ (that.objW * that.options.modalZoomFactor) +'px; height:'+ (that.objH * that.options.modalZoomFactor) +'px;"></div>');
 	
 			/*INIT DRAGGING*/
 			that.createCropControls();
@@ -265,13 +267,20 @@
 		},
 		initialScaleImg:function(){
 			var that = this;
-			that.zoom(-that.imgInitW);
-			that.zoom(40);
+			var modalZoomFactor = that.options.modalZoomFactor;
+			that.zoom(-that.imgInitW);  //zoom out from full size to obj window size
+			that.zoom((modalZoomFactor - 1) * that.objW); //if we're enlarging the crop area, we need to adjust for that
+			console.log("Current zoom" + that.imgH + "px x " + that.imgW + "px vs " + that.objH + "px x " + that.objW );
+			while(!(that.imgH > that.objH*modalZoomFactor && that.imgW > that.objW*modalZoomFactor )){
+				console.log("Still need to zoom" + that.imgH + "px x " + that.imgW + "px vs " + that.objH + "px x " + that.objW );
+				that.zoom(40)
+			}
+//			that.zoom(40); //zoom a little so we can see the transparent overlay behind the crop area
 			
 			// initial center image
-			
-			that.img.css({'left': -(that.imgW -that.objW)/2, 'top': -(that.imgH -that.objH)/2, 'position':'relative'});
-			if(that.options.imgEyecandy){ that.imgEyecandy.css({'left': -(that.imgW -that.objW)/2, 'top': -(that.imgH -that.objH)/2, 'position':'relative'}); }
+
+			that.img.css({'left': -(that.imgW -that.objW*modalZoomFactor)/2, 'top': -(that.imgH -that.objH*modalZoomFactor)/2, 'position':'relative'});
+			if(that.options.imgEyecandy){ that.imgEyecandy.css({'left': -(that.imgW -that.objW*modalZoomFactor)/2, 'top': -(that.imgH -that.objH*modalZoomFactor)/2, 'position':'relative'}); }
 			
 		},
 		createCropControls: function(){
@@ -343,11 +352,35 @@
 					
 					if(that.options.imgEyecandy){ that.imgEyecandy.offset({ top:imgTop, left:imgLeft }); }
 					
-					if( parseInt( that.img.css('top')) > 0 ){ that.img.css('top',0);  if(that.options.imgEyecandy){ that.imgEyecandy.css('top', 0); } }
-					var maxTop = -( that.imgH-that.objH); if( parseInt( that.img.css('top')) < maxTop){ that.img.css('top', maxTop); if(that.options.imgEyecandy){ that.imgEyecandy.css('top', maxTop); } }
+					if( parseInt( that.img.css('top')) > 0 ){
+						that.img.css('top',0);
+						if(that.options.imgEyecandy){
+							that.imgEyecandy.css('top', 0);
+						}
+					}
+					var maxTop = -( that.imgH-that.objH*that.options.modalZoomFactor);
+					if( parseInt( that.img.css('top')) < maxTop){
+						that.img.css('top', maxTop);
+						if(that.options.imgEyecandy){
+							that.imgEyecandy.css('top', maxTop);
+						}
+					}
 					
-					if( parseInt( that.img.css('left')) > 0 ){ that.img.css('left',0); if(that.options.imgEyecandy){ that.imgEyecandy.css('left', 0); }}
-					var maxLeft = -( that.imgW-that.objW); if( parseInt( that.img.css('left')) < maxLeft){ that.img.css('left', maxLeft); if(that.options.imgEyecandy){ that.imgEyecandy.css('left', maxLeft); } }
+					if( parseInt( that.img.css('left')) > 0 ){
+						that.img.css('left',0);
+						if(that.options.imgEyecandy){
+							that.imgEyecandy.css('left', 0);
+						}
+					}
+
+					var maxLeft = -( that.imgW-that.objW*that.options.modalZoomFactor);
+					if( parseInt( that.img.css('left')) < maxLeft){
+						that.img.css('left', maxLeft);
+						if(that.options.imgEyecandy){
+							that.imgEyecandy.css('left', maxLeft);
+						}
+					}
+
 					
 					if (that.options.onImgDrag) that.options.onImgDrag.call(that);
 					
