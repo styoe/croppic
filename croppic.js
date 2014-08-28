@@ -269,8 +269,8 @@
 			var that = this;
 			var modalZoomFactor = that.options.modalZoomFactor;
 			that.zoom(-that.imgInitW);  //zoom out from full size to obj window size
-			that.zoom((modalZoomFactor - 1) * that.objW); //if we're enlarging the crop area, we need to adjust for that
-			console.log("Current zoom" + that.imgH + "px x " + that.imgW + "px vs " + that.objH + "px x " + that.objW );
+//			that.zoom((modalZoomFactor - 1) * that.objW); //if we're enlarging the crop area, we need to adjust for that
+//			console.log("Current zoom" + that.imgH + "px x " + that.imgW + "px vs " + that.objH + "px x " + that.objW );
 			while(!(that.imgH > that.objH*modalZoomFactor && that.imgW > that.objW*modalZoomFactor )){
 				console.log("Still need to zoom" + that.imgH + "px x " + that.imgW + "px vs " + that.objH + "px x " + that.objW );
 				that.zoom(40)
@@ -393,26 +393,24 @@
 			});
 			
 		},
-		zoom :function(x){
+		zoom:function(x){
 			var that = this;
 			var ratio = that.imgW / that.imgH;
 			var newWidth = that.imgW+x;
 			var newHeight = newWidth/ratio;
 			var doPositioning = true;
-			
-			if( newWidth < that.objW || newHeight < that.objH){
+			var zoomedObjH = that.objH * that.options.modalZoomFactor;
+			var zoomedObjW = that.objW * that.options.modalZoomFactor;
+			if( newWidth < zoomedObjW || newHeight < zoomedObjH){
 				
-				if( newWidth - that.objW < newHeight - that.objH ){ 
-					newWidth = that.objW;
+				if( newWidth - zoomedObjW < newHeight - zoomedObjH ){ 
+					newWidth = zoomedObjW;
 					newHeight = newWidth/ratio;
 				}else{
-					newHeight = that.objH;
+					newHeight = zoomedObjH;
 					newWidth = ratio * newHeight;
 				}
-				
-				doPositioning = false;
-				
-			} 
+			}
 			
 			if( newWidth > that.imgInitW || newHeight > that.imgInitH){
 				
@@ -440,8 +438,8 @@
 			if( newTop>0 ){ newTop=0;}
 			if( newLeft>0 ){ newLeft=0;}
 			
-			var maxTop = -( newHeight-that.objH); if( newTop < maxTop){	newTop = maxTop;	}
-			var maxLeft = -( newWidth-that.objW); if( newLeft < maxLeft){	newLeft = maxLeft;	}
+			var maxTop = -( newHeight-zoomedObjH); if( newTop < maxTop){	newTop = maxTop;	}
+			var maxLeft = -( newWidth-zoomedObjW); if( newLeft < maxLeft){	newLeft = maxLeft;	}
 			
 			if( doPositioning ){
 				that.img.css({'top':newTop, 'left':newLeft}); 
@@ -475,8 +473,8 @@
 					imgH:that.imgH,
 					imgY1:Math.abs( parseInt( that.img.css('top') ) ),
 					imgX1:Math.abs( parseInt( that.img.css('left') ) ),
-					cropH:that.objH,
-					cropW:that.objW
+					cropH:that.objH*that.options.modalZoomFactor,
+					cropW:that.objW*that.options.modalZoomFactor
 				};
 
 			if(that.options.customImgCrop){
