@@ -1,17 +1,17 @@
 {
-  "name": "croppic-transloadit",
+  "name": "croppic-extended",
   "main": "croppic.js",
   "version": "0.0.0",
   "homepage": "https://github.com/th3morg/croppic",
   "authors": [
     "Ryan Morgan <th3morg@gmail.com>"
   ],
-  "description": "Using the croppic.net project along with the TransloadIt (transloadit.com) service for hands-off crop processing.",
+  "description": "Extending the croppic.net project to contain some additional features.",
   "keywords": [
     "crop"
   ],
   "license": "MIT",
-  "private": true,
+  "private": false,
   "ignore": [
     "**/.*",
     "node_modules",
