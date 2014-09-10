@@ -179,12 +179,13 @@
 						
 						that.hideLoader();
 
-						if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+						if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that, response);
 						
 					}
 					
 					if(response.status=='error'){
-						that.obj.append('<p style="width:100%; height:100%; text-align:center; line-height:'+that.objH+'px;">'+response.message+'</p>');
+						
+						if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that, response);
 						that.hideLoader();
 						setTimeout( function(){ that.reset(); },2000)
 					}
