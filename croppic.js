@@ -34,7 +34,11 @@
 			onImgDrag: null,
 			onImgZoom: null,
 			onBeforeImgCrop: null,
-			onAfterImgCrop: null
+			onAfterImgCrop: null,
+			customImgCrop: null,
+			processInline: false,
+			modalZoomFactor: 1,
+			customOptions: {}
 		};
 
 		// OVERWRITE DEFAULT OPTIONS
@@ -145,61 +149,84 @@
 				
 				that.showLoader();
 				that.imgUploadControl.hide();
-			
-				var formData = new FormData(that.form[0]);
-			
-				for (var key in that.options.uploadData) {
-					if( that.options.uploadData.hasOwnProperty(key) ) {
-						formData.append( key , that.options.uploadData[key] );	
+
+				if(that.options.processInline){
+					//Reading Inline
+					var reader = new FileReader();
+					reader.onload = function (e) {
+						var image = new Image();
+						image.src = e.target.result;
+						image.onload = function(){
+							that.imgInitW = that.imgW = image.width;
+							that.imgInitH = that.imgH = image.height;
+
+							if(that.options.modal){	that.createModal(); }
+							if( !$.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
+							that.imgOriginal = image.src;
+							that.obj.append('<img src="'+image.src+'">');
+							that.initCropper();
+
+							that.hideLoader();
+
+							if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+						}
+					};
+					reader.readAsDataURL(that.form.find('input[type="file"]')[0].files[0]);
+
+				} else {
+
+					var formData = new FormData(that.form[0]);
+
+					for (var key in that.options.uploadData) {
+						if( that.options.uploadData.hasOwnProperty(key) ) {
+							formData.append( key , that.options.uploadData[key] );
+						}
 					}
+					$.ajax({
+						url: that.options.uploadUrl,
+						data: formData,
+						context: document.body,
+						cache: false,
+						contentType: false,
+						processData: false,
+						type: 'POST'
+					}).always(function(data){
+						response = jQuery.parseJSON(data);
+						if(response.status=='success'){
+
+							that.imgInitW = that.imgW = response.width;
+							that.imgInitH = that.imgH = response.height;
+
+							if(that.options.modal){	that.createModal(); }
+							if( !$.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
+
+							that.imgUrl=response.url;
+
+							that.obj.append('<img src="'+response.url+'">');
+							that.initCropper();
+
+							that.hideLoader();
+
+							if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+
+						}
+
+						if(response.status=='error'){
+							that.obj.append('<p style="width:100%; height:100%; text-align:center; line-height:'+that.objH+'px;">'+response.message+'</p>');
+							that.hideLoader();
+							setTimeout( function(){ that.reset(); },2000)
+						}
+					});
 				}
-				
-				$.ajax({
-                    url: that.options.uploadUrl,
-                    data: formData,
-                    context: document.body,
-                    cache: false,
-                    contentType: false,
-                    processData: false,
-                    type: 'POST'
-				}).always(function(data){
-					response = jQuery.parseJSON(data);
-					if(response.status=='success'){
-						
-						that.imgInitW = that.imgW = response.width;
-						that.imgInitH = that.imgH = response.height;
-						
-						if(that.options.modal){	that.createModal(); }
-						if( !$.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
-						
-						that.imgUrl=response.url;
-						
-						that.obj.append('<img src="'+response.url+'">');
-						that.initCropper();
-						
-						that.hideLoader();
 
-						if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
-						
-					}
-					
-					if(response.status=='error'){
-						that.obj.append('<p style="width:100%; height:100%; text-align:center; line-height:'+that.objH+'px;">'+response.message+'</p>');
-						that.hideLoader();
-						setTimeout( function(){ that.reset(); },2000)
-					}
-					
-
-				});
-				
 			});
 		
 		},
 		createModal: function(){
 			var that = this;
-		
-			var marginTop = that.windowH/2-that.objH/2;
-			var modalHTML =  '<div id="croppicModal">'+'<div id="croppicModalObj" style="width:'+ that.objW +'px; height:'+ that.objH +'px; margin:0 auto; margin-top:'+ marginTop +'px; position: relative;"> </div>'+'</div>';
+
+			var marginTop = that.windowH/2-(that.objH*that.options.modalZoomFactor)/2;
+			var modalHTML =  '<div id="croppicModal">'+'<div id="croppicModalObj" style="width:'+ (that.objW * that.options.modalZoomFactor) +'px; height:'+ (that.objH * that.options.modalZoomFactor) +'px; margin:0 auto; margin-top:'+ marginTop +'px; position: relative;"> </div>'+'</div>';
 
 			$('body').append(modalHTML);
 			
@@ -219,7 +246,7 @@
 			
 			/*SET UP SOME VARS*/
 			that.img = that.obj.find('img');
-			that.img.wrap('<div class="cropImgWrapper" style="overflow:hidden; z-index:1; position:absolute; width:'+that.objW+'px; height:'+that.objH+'px;"></div>');
+			that.img.wrap('<div class="cropImgWrapper" style="overflow:hidden; z-index:1; position:absolute; width:'+ (that.objW * that.options.modalZoomFactor) +'px; height:'+ (that.objH * that.options.modalZoomFactor) +'px;"></div>');
 	
 			/*INIT DRAGGING*/
 			that.createCropControls();
@@ -240,16 +267,22 @@
 		},
 		initialScaleImg:function(){
 			var that = this;
-			that.zoom(-that.imgInitW);
-			that.zoom(40);
+			var modalZoomFactor = that.options.modalZoomFactor;
+			that.zoom(-that.imgInitW);  //zoom out from full size to obj window size
+//			that.zoom((modalZoomFactor - 1) * that.objW); //if we're enlarging the crop area, we need to adjust for that
+//			console.log("Current zoom" + that.imgH + "px x " + that.imgW + "px vs " + that.objH + "px x " + that.objW );
+			while(!(that.imgH > that.objH*modalZoomFactor && that.imgW > that.objW*modalZoomFactor )){
+				console.log("Still need to zoom" + that.imgH + "px x " + that.imgW + "px vs " + that.objH + "px x " + that.objW );
+				that.zoom(40)
+			}
+//			that.zoom(40); //zoom a little so we can see the transparent overlay behind the crop area
 			
 			// initial center image
-			
-			that.img.css({'left': -(that.imgW -that.objW)/2, 'top': -(that.imgH -that.objH)/2, 'position':'relative'});
-			if(that.options.imgEyecandy){ that.imgEyecandy.css({'left': -(that.imgW -that.objW)/2, 'top': -(that.imgH -that.objH)/2, 'position':'relative'}); }
+
+			that.img.css({'left': -(that.imgW -that.objW*modalZoomFactor)/2, 'top': -(that.imgH -that.objH*modalZoomFactor)/2, 'position':'relative'});
+			if(that.options.imgEyecandy){ that.imgEyecandy.css({'left': -(that.imgW -that.objW*modalZoomFactor)/2, 'top': -(that.imgH -that.objH*modalZoomFactor)/2, 'position':'relative'}); }
 			
 		},
-		
 		createCropControls: function(){
 			var that = this;
 			
@@ -319,11 +352,35 @@
 					
 					if(that.options.imgEyecandy){ that.imgEyecandy.offset({ top:imgTop, left:imgLeft }); }
 					
-					if( parseInt( that.img.css('top')) > 0 ){ that.img.css('top',0);  if(that.options.imgEyecandy){ that.imgEyecandy.css('top', 0); } }
-					var maxTop = -( that.imgH-that.objH); if( parseInt( that.img.css('top')) < maxTop){ that.img.css('top', maxTop); if(that.options.imgEyecandy){ that.imgEyecandy.css('top', maxTop); } }
+					if( parseInt( that.img.css('top')) > 0 ){
+						that.img.css('top',0);
+						if(that.options.imgEyecandy){
+							that.imgEyecandy.css('top', 0);
+						}
+					}
+					var maxTop = -( that.imgH-that.objH*that.options.modalZoomFactor);
+					if( parseInt( that.img.css('top')) < maxTop){
+						that.img.css('top', maxTop);
+						if(that.options.imgEyecandy){
+							that.imgEyecandy.css('top', maxTop);
+						}
+					}
 					
-					if( parseInt( that.img.css('left')) > 0 ){ that.img.css('left',0); if(that.options.imgEyecandy){ that.imgEyecandy.css('left', 0); }}
-					var maxLeft = -( that.imgW-that.objW); if( parseInt( that.img.css('left')) < maxLeft){ that.img.css('left', maxLeft); if(that.options.imgEyecandy){ that.imgEyecandy.css('left', maxLeft); } }
+					if( parseInt( that.img.css('left')) > 0 ){
+						that.img.css('left',0);
+						if(that.options.imgEyecandy){
+							that.imgEyecandy.css('left', 0);
+						}
+					}
+
+					var maxLeft = -( that.imgW-that.objW*that.options.modalZoomFactor);
+					if( parseInt( that.img.css('left')) < maxLeft){
+						that.img.css('left', maxLeft);
+						if(that.options.imgEyecandy){
+							that.imgEyecandy.css('left', maxLeft);
+						}
+					}
+
 					
 					if (that.options.onImgDrag) that.options.onImgDrag.call(that);
 					
@@ -336,26 +393,24 @@
 			});
 			
 		},
-		zoom :function(x){
+		zoom:function(x){
 			var that = this;
 			var ratio = that.imgW / that.imgH;
 			var newWidth = that.imgW+x;
 			var newHeight = newWidth/ratio;
 			var doPositioning = true;
-			
-			if( newWidth < that.objW || newHeight < that.objH){
+			var zoomedObjH = that.objH * that.options.modalZoomFactor;
+			var zoomedObjW = that.objW * that.options.modalZoomFactor;
+			if( newWidth < zoomedObjW || newHeight < zoomedObjH){
 				
-				if( newWidth - that.objW < newHeight - that.objH ){ 
-					newWidth = that.objW;
+				if( newWidth - zoomedObjW < newHeight - zoomedObjH ){ 
+					newWidth = zoomedObjW;
 					newHeight = newWidth/ratio;
 				}else{
-					newHeight = that.objH;
+					newHeight = zoomedObjH;
 					newWidth = ratio * newHeight;
 				}
-				
-				doPositioning = false;
-				
-			} 
+			}
 			
 			if( newWidth > that.imgInitW || newHeight > that.imgInitH){
 				
@@ -383,8 +438,8 @@
 			if( newTop>0 ){ newTop=0;}
 			if( newLeft>0 ){ newLeft=0;}
 			
-			var maxTop = -( newHeight-that.objH); if( newTop < maxTop){	newTop = maxTop;	}
-			var maxLeft = -( newWidth-that.objW); if( newLeft < maxLeft){	newLeft = maxLeft;	}
+			var maxTop = -( newHeight-zoomedObjH); if( newTop < maxTop){	newTop = maxTop;	}
+			var maxLeft = -( newWidth-zoomedObjW); if( newLeft < maxLeft){	newLeft = maxLeft;	}
 			
 			if( doPositioning ){
 				that.img.css({'top':newTop, 'left':newLeft}); 
@@ -410,6 +465,7 @@
 			that.showLoader();
 	
 			var cropData = {
+					imgOriginal:that.imgOriginal,
 					imgUrl:that.imgUrl,
 					imgInitW:that.imgInitW,
 					imgInitH:that.imgInitH,
@@ -417,57 +473,61 @@
 					imgH:that.imgH,
 					imgY1:Math.abs( parseInt( that.img.css('top') ) ),
 					imgX1:Math.abs( parseInt( that.img.css('left') ) ),
-					cropH:that.objH,
-					cropW:that.objW
+					cropH:that.objH*that.options.modalZoomFactor,
+					cropW:that.objW*that.options.modalZoomFactor
 				};
-			
-			var formData = new FormData();
 
-			for (var key in cropData) {
-				if( cropData.hasOwnProperty(key) ) {
+			if(that.options.customImgCrop){
+				that.options.customImgCrop.call(that, cropData);
+			} else {
+				//START OF NORMAL PROCESSING
+				var formData = new FormData();
+
+				for (var key in cropData) {
+					if( cropData.hasOwnProperty(key) ) {
 						formData.append( key , cropData[key] );
+					}
 				}
-			}
-			
-			for (var key in that.options.cropData) {
-				if( that.options.cropData.hasOwnProperty(key) ) {
-						formData.append( key , that.options.cropData[key] );
-				}
-			}
 
-			$.ajax({
-                url: that.options.cropUrl,
-                data: formData,
-                context: document.body,
-                cache: false,
-                contentType: false,
-                processData: false,
-                type: 'POST'
+				for (var key in that.options.cropData) {
+					if( that.options.cropData.hasOwnProperty(key) ) {
+						formData.append( key , that.options.cropData[key] );
+					}
+				}
+
+				$.ajax({
+					url: that.options.cropUrl,
+					data: formData,
+					context: document.body,
+					cache: false,
+					contentType: false,
+					processData: false,
+					type: 'POST'
 				}).always(function(data){
 					response = jQuery.parseJSON(data);
 					if(response.status=='success'){
-						
+
 						that.imgEyecandy.hide();
-						
+
 						that.destroy();
-						
+
 						that.obj.append('<img class="croppedImg" src="'+response.url+'">');
 						if(that.options.outputUrlId !== ''){	$('#'+that.options.outputUrlId).val(response.url);	}
-						
+
 						that.croppedImg = that.obj.find('.croppedImg');
 
 						that.init();
-						
+
 						that.hideLoader();
 
 					}
 					if(response.status=='error'){
 						that.obj.append('<p style="width:100%; height:100%;>'+response.message+'</p>">');
 					}
-					
 					if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that);
-				 
+
 				});
+			}
 		},
 		showLoader:function(){
 			var that = this;

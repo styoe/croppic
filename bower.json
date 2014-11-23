@@ -1,0 +1,22 @@
+{
+  "name": "croppic-extended",
+  "main": "croppic.js",
+  "version": "0.0.0",
+  "homepage": "https://github.com/th3morg/croppic",
+  "authors": [
+    "Ryan Morgan <th3morg@gmail.com>"
+  ],
+  "description": "Extending the croppic.net project to contain some additional features.",
+  "keywords": [
+    "crop"
+  ],
+  "license": "MIT",
+  "private": false,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
