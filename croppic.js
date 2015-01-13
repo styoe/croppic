@@ -157,6 +157,7 @@
 				$.ajax({
                     url: that.options.uploadUrl,
                     data: formData,
+                    headers: that.options.uploadHeaders,
                     context: document.body,
                     cache: false,
                     contentType: false,
@@ -179,7 +180,7 @@
 						
 						that.hideLoader();
 
-						if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+						if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.apply(that, arguments);
 						
 					}
 					
@@ -438,6 +439,7 @@
 			$.ajax({
                 url: that.options.cropUrl,
                 data: formData,
+                headers: that.options.cropHeaders,
                 context: document.body,
                 cache: false,
                 contentType: false,
@@ -465,7 +467,7 @@
 						that.obj.append('<p style="width:100%; height:100%;>'+response.message+'</p>">');
 					}
 					
-					if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that);
+					if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.apply(that, arguments);
 				 
 				});
 		},
