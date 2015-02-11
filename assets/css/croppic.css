@@ -27,7 +27,6 @@
 			.cropImgUpload{
 				z-index:2;
 				position:absolute;
-				height:28px;
 				display:block;
 				top: -30px;
 				right: -2px;
@@ -82,7 +81,7 @@
 			.cropControls i.cropControlRemoveCroppedImage{ background-position:-180px 0px;}
 			
 			.cropControls i:last-child{
-				margin-right:none;
+				margin-right:0;
 			}
 			
 			#croppicModal{

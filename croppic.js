@@ -43,7 +43,7 @@
 			onImgRotate: null,
 			onBeforeImgCrop: null,
 			onAfterImgCrop: null,
-			onError: null,
+			onError: null
 			
 		};
 
@@ -453,13 +453,13 @@
 	        that.img.css({
 	            '-webkit-transform': 'rotate(' + that.actualRotation + 'deg)',
 	            '-moz-transform': 'rotate(' + that.actualRotation + 'deg)',
-	            'transform': 'rotate(' + that.actualRotation + 'deg)',
+	            'transform': 'rotate(' + that.actualRotation + 'deg)'
 	        });
 	        if(that.options.imgEyecandy) {
 	            that.imgEyecandy.css({
 	                '-webkit-transform': 'rotate(' + that.actualRotation + 'deg)',
 	                '-moz-transform': 'rotate(' + that.actualRotation + 'deg)',
-	                'transform': 'rotate(' + that.actualRotation + 'deg)',
+	                'transform': 'rotate(' + that.actualRotation + 'deg)'
 	            });
 	        }
 	        if (typeof that.options.onImgRotate == 'function')
@@ -553,13 +553,14 @@
 			
 			var formData = new FormData();
 
-			for (var key in cropData) {
+			var key;
+			for (key in cropData) {
 				if( cropData.hasOwnProperty(key) ) {
 						formData.append( key , cropData[key] );
 				}
 			}
 			
-			for (var key in that.options.cropData) {
+			for (key in that.options.cropData) {
 				if( that.options.cropData.hasOwnProperty(key) ) {
 						formData.append( key , that.options.cropData[key] );
 				}
