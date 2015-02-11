@@ -44,19 +44,20 @@
 				position:absolute;
 				height:30px;
 				display:block;
-				/* top: -31px; */
-				top: -1px;
-				right: -1px;
+				margin: auto;
+				top: 0;
+				right: 0;
+				left: 0;
+				bottom: 0;
 				font-family:sans-serif;
-				background-color:rgba(0,0,0,0.35); 
+				text-align: center;
 			}
 			
 			.cropControls i{
-				display:block;
-				float:left;
+				display: inline-block;
 				margin:0;
 				cursor:pointer;
-				background-image:url('../img/cropperIcons.png');	
+				background: rgba(0,0,0,.35) url('../img/cropperIcons.png');
 				width:30px;
 				height:30px;
 				text-align:center;
@@ -65,7 +66,6 @@
 				font-size:13px;
 				font-weight: bold;
 				font-style: normal;
-				
 			}
 			
 			.cropControls i:hover{ background-color:rgba(0,0,0,0.7);  }
