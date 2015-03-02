@@ -137,7 +137,7 @@
 			var that = this;
 			
 			// CREATE UPLOAD IMG FORM
-			var formHtml = '<form class="'+that.id+'_imgUploadForm" style="position: absolute; visibility: hidden; top:0;">  <input type="file" name="img">  </form>';
+			var formHtml = '<form class="'+that.id+'_imgUploadForm" style="position: absolute; visibility: hidden; top:0;">  <input type="file" name="img" accept="image/*">  </form>';
 			that.outputDiv.append(formHtml);
 			that.form = that.outputDiv.find('.'+that.id+'_imgUploadForm');
 			
@@ -172,6 +172,14 @@
 											
 			that.form.find('input[type="file"]').change(function(){
 				
+				var file = that.form.find('input[type="file"]')[0].files[0];
+		                if (file.type.indexOf('image') != 0) {
+		                    if (that.options.onError) that.options.onError.call(that, 'Invalid file type');
+		                    that.hideLoader();
+		                    that.reset();
+		                    return;
+		                }
+				
 				if (that.options.onBeforeImgUpload) that.options.onBeforeImgUpload.call(that);
 				
 				that.showLoader();
@@ -202,7 +210,7 @@
 																				
 						}
 					};
-					reader.readAsDataURL(that.form.find('input[type="file"]')[0].files[0]);
+					reader.readAsDataURL(file);
 
 				} else {
 								
@@ -248,7 +256,7 @@
 						if(response.status=='error'){
 							if (that.options.onError) that.options.onError.call(that,response.message);
 							that.hideLoader();
-							setTimeout( function(){ that.reset(); },2000)
+							setTimeout( function(){ that.reset(); },2000);
 						}
 						
 
@@ -590,8 +598,68 @@
 					cropW:that.objW,
 					rotation:that.actualRotation
 				};
-			
-			var formData = new FormData();
+				
+			if (that.options.processInline) {
+				// Cropping Inline
+
+				if (that.options.imgEyecandy) that.imgEyecandy.hide();
+		
+				that.destroy();
+		
+				// Crop and resize image with a canvas
+		
+				var canvas = document.createElement('canvas');
+				canvas.className = "croppedImg";
+				canvas.width = cropData.cropW;
+				canvas.height = cropData.cropH;
+				var context = canvas.getContext('2d');
+		
+				var imageObj = new Image();
+				imageObj.src = cropData.imgUrl;
+		
+				var scaleFactor = cropData.imgInitW / cropData.imgW;
+				var cropX = cropData.imgX1 * scaleFactor;
+				var cropY = cropData.imgY1 * scaleFactor;
+				var cropW = cropData.cropW * scaleFactor;
+				var cropH = cropData.cropH * scaleFactor;
+		
+				var x = 0;
+				var y = 0;
+				var width = cropData.cropW;
+				var height = cropData.cropH;
+		
+				var ratioOriginalImage = cropData.imgInitW / cropData.imgInitH;
+		                
+				try {
+					if (cropX == 0 && cropY == 0 && ratioOriginalImage == 1) {
+						// only scale image
+						context.drawImage(imageObj, x, y, width, height);
+					} else {
+						// crop and scale image
+						context.drawImage(imageObj, cropX, cropY, cropW, cropH, x, y, width, height);
+					}
+				} catch (e) {
+					if (that.options.onError) that.options.onError.call(that, e.message);
+					that.reset();
+					return;
+				}
+		
+				that.obj.append(canvas);
+		
+				if (that.options.outputUrlId !== '') {
+					$('#' + that.options.outputUrlId).val(cropData['imgUrl']);
+				}
+		
+				that.croppedImg = that.obj.find('.croppedImg');
+		
+				that.init();
+		
+				that.hideLoader();
+		
+				if (that.options.onAfterImgCrop)
+					that.options.onAfterImgCrop.call(that);
+			} else {
+				var formData = new FormData();
 
 			for (var key in cropData) {
 				if( cropData.hasOwnProperty(key) ) {
@@ -635,12 +703,13 @@
 					if(response.status=='error'){
 						if (that.options.onError) that.options.onError.call(that,response.message);
 						that.hideLoader();
-						setTimeout( function(){ that.reset(); },2000)											
+						setTimeout( function(){ that.reset(); },2000);											
 					}
 					
 					if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that);
 				 
 				});
+			}
 		},
 		showLoader:function(){
 			var that = this;
