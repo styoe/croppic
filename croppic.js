@@ -598,8 +598,68 @@
 					cropW:that.objW,
 					rotation:that.actualRotation
 				};
-			
-			var formData = new FormData();
+				
+			if (that.options.processInline) {
+				// Cropping Inline
+
+				if (that.options.imgEyecandy) that.imgEyecandy.hide();
+		
+				that.destroy();
+		
+				// Crop and resize image with a canvas
+		
+				var canvas = document.createElement('canvas');
+				canvas.className = "croppedImg";
+				canvas.width = cropData.cropW;
+				canvas.height = cropData.cropH;
+				var context = canvas.getContext('2d');
+		
+				var imageObj = new Image();
+				imageObj.src = cropData.imgUrl;
+		
+				var scaleFactor = cropData.imgInitW / cropData.imgW;
+				var cropX = cropData.imgX1 * scaleFactor;
+				var cropY = cropData.imgY1 * scaleFactor;
+				var cropW = cropData.cropW * scaleFactor;
+				var cropH = cropData.cropH * scaleFactor;
+		
+				var x = 0;
+				var y = 0;
+				var width = cropData.cropW;
+				var height = cropData.cropH;
+		
+				var ratioOriginalImage = cropData.imgInitW / cropData.imgInitH;
+		                
+				try {
+					if (cropX == 0 && cropY == 0 && ratioOriginalImage == 1) {
+						// only scale image
+						context.drawImage(imageObj, x, y, width, height);
+					} else {
+						// crop and scale image
+						context.drawImage(imageObj, cropX, cropY, cropW, cropH, x, y, width, height);
+					}
+				} catch (e) {
+					if (that.options.onError) that.options.onError.call(that, e.message);
+					that.reset();
+					return;
+				}
+		
+				that.obj.append(canvas);
+		
+				if (that.options.outputUrlId !== '') {
+					$('#' + that.options.outputUrlId).val(cropData['imgUrl']);
+				}
+		
+				that.croppedImg = that.obj.find('.croppedImg');
+		
+				that.init();
+		
+				that.hideLoader();
+		
+				if (that.options.onAfterImgCrop)
+					that.options.onAfterImgCrop.call(that);
+			} else {
+				var formData = new FormData();
 
 			for (var key in cropData) {
 				if( cropData.hasOwnProperty(key) ) {
@@ -649,6 +709,7 @@
 					if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that);
 				 
 				});
+			}
 		},
 		showLoader:function(){
 			var that = this;
