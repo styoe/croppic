@@ -256,7 +256,7 @@
 						if(response.status=='error'){
 							if (that.options.onError) that.options.onError.call(that,response.message);
 							that.hideLoader();
-							setTimeout( function(){ that.reset(); },2000)
+							setTimeout( function(){ that.reset(); },2000);
 						}
 						
 
@@ -703,7 +703,7 @@
 					if(response.status=='error'){
 						if (that.options.onError) that.options.onError.call(that,response.message);
 						that.hideLoader();
-						setTimeout( function(){ that.reset(); },2000)											
+						setTimeout( function(){ that.reset(); },2000);											
 					}
 					
 					if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that);
