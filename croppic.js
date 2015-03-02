@@ -137,7 +137,7 @@
 			var that = this;
 			
 			// CREATE UPLOAD IMG FORM
-			var formHtml = '<form class="'+that.id+'_imgUploadForm" style="position: absolute; visibility: hidden; top:0;">  <input type="file" name="img">  </form>';
+			var formHtml = '<form class="'+that.id+'_imgUploadForm" style="position: absolute; visibility: hidden; top:0;">  <input type="file" name="img" accept="image/*">  </form>';
 			that.outputDiv.append(formHtml);
 			that.form = that.outputDiv.find('.'+that.id+'_imgUploadForm');
 			
@@ -172,6 +172,14 @@
 											
 			that.form.find('input[type="file"]').change(function(){
 				
+				var file = that.form.find('input[type="file"]')[0].files[0];
+		                if (file.type.indexOf('image') != 0) {
+		                    if (that.options.onError) that.options.onError.call(that, 'Invalid file type');
+		                    that.hideLoader();
+		                    that.reset();
+		                    return;
+		                }
+				
 				if (that.options.onBeforeImgUpload) that.options.onBeforeImgUpload.call(that);
 				
 				that.showLoader();
@@ -202,7 +210,7 @@
 																				
 						}
 					};
-					reader.readAsDataURL(that.form.find('input[type="file"]')[0].files[0]);
+					reader.readAsDataURL(file);
 
 				} else {
 								
