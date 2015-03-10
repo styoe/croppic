@@ -20,6 +20,7 @@
 			cropUrl:'',
 			cropData:{},
 			outputUrlId:'',
+			deleteUrl:'',
 			//styles
 			imgEyecandy:true,
 			imgEyecandyOpacity:0.2,
@@ -155,6 +156,7 @@
 					
 					that.croppedImg.remove();
 					$(this).hide();
+					that.delete(that.cropUrl);
 					
 					if (typeof (that.options.onAfterRemoveCroppedImg) === typeof(Function)) {
 						that.options.onAfterRemoveCroppedImg.call(that);
@@ -412,7 +414,10 @@
 			that.cropControlCrop.on('click',function(){ that.crop(); });
 
 			that.cropControlReset = that.cropControlsCrop.find('.cropControlReset');
-			that.cropControlReset.on('click',function(){ that.reset(); });				
+			that.cropControlReset.on('click',function(){ 
+				that.delete(that.imgUrl);
+				that.reset();
+			});				
 			
 		},
 		initDrag:function(){
@@ -621,6 +626,7 @@
 						    that.imgEyecandy.hide();
 						
 						that.destroy();
+						that.cropUrl=response.url;
 						
 						that.obj.append('<img class="croppedImg" src="'+response.url+'">');
 						if(that.options.outputUrlId !== ''){	$('#'+that.options.outputUrlId).val(response.url);	}
@@ -675,6 +681,51 @@
 			if( !$.isEmptyObject( that.loader ) ){   that.loader.remove(); }
 			if( !$.isEmptyObject( that.form ) ){   that.form.remove(); }
 			that.obj.html('');
-		}
+		},
+                
+                delete: function (myURL) {
+                    var that = this;
+                    
+                    var deleteData = {
+                    deleteUrl:myURL
+                    };
+
+                    var formData = new FormData();
+
+                    for (var key in deleteData) {
+                            if( deleteData.hasOwnProperty(key) ) {
+                                            formData.append( key , deleteData[key] );
+                            }
+                    }
+
+                    $.ajax({
+                        url: that.options.deleteUrl,
+                        data: formData,
+                        context: document.body,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        type: 'POST'
+                    }).always(function(data) {
+                        response = typeof data == 'object' ? data : jQuery.parseJSON(data);
+
+                        if (response.status == 'success') {
+
+                            //add code if desired
+
+                        }
+
+                        if (response.status == 'error') {
+                            if (that.options.onError)
+                                that.options.onError.call(that, response.message);
+                            that.hideLoader();
+                            setTimeout(function() {
+                                that.reset();
+                            }, 2000)
+                        }
+
+                    });
+				
+		}    
 	};
 })(window, document);
