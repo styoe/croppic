@@ -218,6 +218,7 @@
 						url: that.options.uploadUrl,
 						data: formData,
 						context: document.body,
+						headers: that.options.uploadHeaders,
 						cache: false,
 						contentType: false,
 						processData: false,
@@ -608,6 +609,7 @@
 			$.ajax({
                 url: that.options.cropUrl,
                 data: formData,
+                headers: that.options.cropHeaders,
                 context: document.body,
                 cache: false,
                 contentType: false,
