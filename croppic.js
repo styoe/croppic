@@ -241,7 +241,7 @@
 							img.load(function(){
 								that.initCropper();
 								that.hideLoader();
-								if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+								if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.apply(that, arguments);
 							});
 						}
 						
@@ -637,9 +637,9 @@
 						that.hideLoader();
 						setTimeout( function(){ that.reset(); },2000)											
 					}
-					
-					if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that);
-				 
+
+					if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.apply(that, arguments);
+
 				});
 		},
 		showLoader:function(){
