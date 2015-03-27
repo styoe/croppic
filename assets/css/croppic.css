@@ -46,9 +46,9 @@
 				display:block;
 				/* top: -31px; */
 				top: -1px;
-				right: -1px;
+				right: 2px;
 				font-family:sans-serif;
-				background-color:rgba(0,0,0,0.35); 
+				background-color:rgba(0,0,0,0.35);
 			}
 			
 			.cropControls i{
@@ -56,7 +56,7 @@
 				float:left;
 				margin:0;
 				cursor:pointer;
-				background-image:url('../img/cropperIcons.png');	
+				background-image:url('../img/cropperIcons.png');
 				width:30px;
 				height:30px;
 				text-align:center;
@@ -80,7 +80,11 @@
 			.cropControls i.cropControlUpload{ background-position:-150px 0px;}
 			.cropControls i.cropControlReset{ background-position:-180px 0px;}
 			.cropControls i.cropControlRemoveCroppedImage{ background-position:-180px 0px;}
-			
+            .cropControls i.cropControlRestoreDefaultImage{ background-image:url('../img/reset.png');}
+            .cropControls i.cropControlRestoreDefaultImage > p{
+                margin-top: 3px;
+                font-size: 11px;
+            }
 			.cropControls i:last-child{
 				margin-right:none;
 			}
@@ -98,7 +102,7 @@
 			
 			
 			/*
-			*		PRELOADER 
+			*		PRELOADER
 			*		With courtesy of : http://cssload.net/
 			*/
 			
