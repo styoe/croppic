@@ -34,7 +34,8 @@
 			processInline: false,
 			loadPicture:'',
 			onReset: null,
-			enableMousescroll: false, 			
+			enableMousescroll: false, 	
+			headers: {},		
 			
 			//callbacks
 			onBeforeImgUpload: null,
@@ -221,7 +222,8 @@
 						cache: false,
 						contentType: false,
 						processData: false,
-						type: 'POST'
+						type: 'POST',
+						headers: that.options.headers
 					}).always(function(data){
 						response = typeof data =='object' ? data : jQuery.parseJSON(data);
 						if(response.status=='success'){
@@ -612,7 +614,8 @@
                 cache: false,
                 contentType: false,
                 processData: false,
-                type: 'POST'
+                type: 'POST',
+                headers: that.options.headers
 				}).always(function(data){
 					response = typeof data =='object' ? data : jQuery.parseJSON(data);
 					
