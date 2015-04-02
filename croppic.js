@@ -33,7 +33,6 @@
 			scaleToFill: true,
 			processInline: false,
 			loadPicture:'',
-			loadPictureBackUp: '',
 			onReset: null,
 			enableMousescroll: false, 			
 			
@@ -48,6 +47,9 @@
 			onError: null,
 			
 		};
+
+		//avoid that the user set the the option loadPictureBackUp. 
+		that.options.loadPictureBackUp = '';
 
 		// OVERWRITE DEFAULT OPTIONS
 		for (i in options) that.options[i] = options[i];
@@ -104,6 +106,7 @@
 			if( $.isEmptyObject(that.options.loadPicture)){				
 				that.bindImgUploadControl();
 				that.bindImgRestoreControl();
+
 			}else{	
 				that.loadExistingImage();
 			}			
@@ -132,13 +135,18 @@
 				that.cropControlRemoveCroppedImage = that.outputDiv.find('.cropControlRemoveCroppedImage');
 			}
 			
-			if( !$.isEmptyObject(that.options.loadPictureBackUp) ){
-                        that.restoreImgControl = that.outputDiv.find('.cropControlRestoreDefaultImage');
-                    }
+			that.restoreImgControl = that.outputDiv.find('.cropControlRestoreDefaultImage');
+			
+			if( $.isEmptyObject(that.options.loadPictureBackUp) ){
+            	that.restoreImgControl.hide();	
+            }else{
+            	that.restoreImgControl.show();
+            }
+
 		},
 
         bindImgRestoreControl: function(){
-         	var that = this;
+        	var that = this;
 
             that.restoreImgControl.off('click');
 
@@ -146,7 +154,7 @@
 
                 that.options.loadPicture = that.options.loadPictureBackUp;
                 that.reset();
-         	});
+            });
         },
 		
 		bindImgUploadControl: function(){
@@ -164,7 +172,7 @@
 			});						
 			
 			if( !$.isEmptyObject(that.croppedImg)){
-			
+
 				that.cropControlRemoveCroppedImage.on('click',function(){
 					that.croppedImg.remove();
 					$(this).hide();
@@ -185,6 +193,9 @@
 				
 				that.showLoader();
 				that.imgUploadControl.hide();
+
+				that.restoreImgControl.hide();
+				that.options.loadPictureBackUp = '';
 				
 				if(that.options.processInline){
 					//Reading Inline
@@ -633,6 +644,8 @@
 						if (that.options.imgEyecandy)
 						    that.imgEyecandy.hide();
 						
+						that.options.loadPictureBackUp = '';
+						that.outputDiv.find('.cropControlRestoreDefaultImage').hide();
 						that.destroy();
 						
 						that.obj.append('<img class="croppedImg" src="'+response.url+'">');

@@ -80,11 +80,13 @@
 			.cropControls i.cropControlUpload{ background-position:-150px 0px;}
 			.cropControls i.cropControlReset{ background-position:-180px 0px;}
 			.cropControls i.cropControlRemoveCroppedImage{ background-position:-180px 0px;}
-            .cropControls i.cropControlRestoreDefaultImage{ background-image:url('../img/reset.png');}
-            .cropControls i.cropControlRestoreDefaultImage > p{
-                margin-top: 3px;
-                font-size: 11px;
-            }
+                    .cropControls i.cropControlRestoreDefaultImage{
+                        background-image:url('../img/reset.png');
+                    }
+                    .cropControls i.cropControlRestoreDefaultImage > p{
+                        margin-top: 3px;
+                        font-size: 11px;
+                    }
 			.cropControls i:last-child{
 				margin-right:none;
 			}
