@@ -78,6 +78,8 @@
 		croppedImg:{},
 		imgEyecandy:{},
 		form:{},
+		iframeform: {},
+        iframeobj: {},
 		cropControlsUpload:{},
 		cropControlsCrop:{},
 		cropControlZoomMuchIn:{},
@@ -162,13 +164,25 @@
 			var that = this;
 			
 			// CREATE UPLOAD IMG FORM
-			var formHtml = '<form class="'+that.id+'_imgUploadForm" style="position: absolute; visibility: hidden; top:0;" enctype="multipart/form-data">  <input type="file" name="img">  </form>';
+			//var formHtml = '<form class="'+that.id+'_imgUploadForm" style="position: absolute; visibility: hidden; top:0;">  <input type="file" name="img">  </form>';
+            var formHtml = '<form class="' + that.id + '_imgUploadForm" style="display: none; position: absolute; visibility:hidden; top:0;">  <input type="file" name="img" id="' + that.id + '_imgUploadField">  </form>';
+
 			that.outputDiv.append(formHtml);
 			that.form = that.outputDiv.find('.'+that.id+'_imgUploadForm');
 			
+			
+			// CREATE FALLBACK IE9 IFRAME
+            var fileUploadId = that.CreateFallbackIframe();
+			
 			that.imgUploadControl.off('click');
-			that.imgUploadControl.on('click',function(){
-				that.form.find('input[type="file"]').trigger('click');										
+
+			that.imgUploadControl.on('click',function(){ 
+				if (fileUploadId === "") {
+                    that.form.find('input[type="file"]').trigger('click');
+                } else {
+                    //Trigger iframe file input click, otherwise access restriction error
+                    that.iframeform.find('input[type="file"]').trigger('click');
+                }									
 			});						
 			
 			if( !$.isEmptyObject(that.croppedImg)){
@@ -197,9 +211,8 @@
 				that.restoreImgControl.hide();
 				that.options.loadPictureBackUp = '';
 				
-				if(that.options.processInline){
-					//Reading Inline
-										
+				if(that.options.processInline){			
+				
 					var reader = new FileReader();
 					reader.onload = function (e) {
 						var image = new Image();
@@ -224,15 +237,15 @@
 					};
 					reader.readAsDataURL(that.form.find('input[type="file"]')[0].files[0]);
 
-				} else {
-								
-					var formData = new FormData(that.form[0]);
+				} else {		
+									    					
+					formData = new FormData(that.form[0]);
 				
 					for (var key in that.options.uploadData) {
 						if( that.options.uploadData.hasOwnProperty(key) ) {
 							formData.append( key , that.options.uploadData[key] );	
 						}
-					}
+					}										
 					
 					$.ajax({
 						url: that.options.uploadUrl,
@@ -242,7 +255,7 @@
 						contentType: false,
 						processData: false,
 						type: 'POST'
-					}).always(function(data){
+					/*}).always(function(data){
 						response = typeof data =='object' ? data : jQuery.parseJSON(data);
 						if(response.status=='success'){
 											
@@ -271,14 +284,15 @@
 							if (that.options.onError) that.options.onError.call(that,response.message);
 							that.hideLoader();
 							setTimeout( function(){ that.reset(); },2000)
-						}
+						}*/
 						
-
+					}).always(function (data) {
+						that.afterUpload(data);
 					});
 				}
-			});
-		
-		},
+            });
+
+        },
 		loadExistingImage: function(){
 			var that = this;
 			
@@ -317,6 +331,42 @@
 		    // delete the default image
 		    that.options.loadPicture = '';
 		},
+		afterUpload: function(data){
+            var that = this;
+
+           	response = typeof data =='object' ? data : jQuery.parseJSON(data);
+
+            
+            if (response.status == 'success') {
+
+                that.imgInitW = that.imgW = response.width;
+                that.imgInitH = that.imgH = response.height;
+
+                if (that.options.modal) { that.createModal(); }
+                if (!$.isEmptyObject(that.croppedImg)) { that.croppedImg.remove(); }
+
+                that.imgUrl = response.url;
+
+                var img = $('<img src="'+response.url+'">')
+
+				that.obj.append(img);
+
+				img.load(function(){
+					that.initCropper();
+					that.hideLoader();
+					if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+				});
+                                
+                if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+
+            }
+
+            if (response.status == 'error') {
+                if (that.options.onError) that.options.onError.call(that,response.message);
+				that.hideLoader();
+				setTimeout( function(){ that.reset(); },2000)	
+            }
+        },
 		
 		createModal: function(){
 			var that = this;
@@ -336,6 +386,7 @@
 			
 			that.obj = that.outputDiv;
 			that.modal.remove();
+			that.modal = {};
 		},
 		initCropper: function(){
 			var that = this;
@@ -449,7 +500,7 @@
 				var pageX;
                 var pageY;
                 var userAgent = window.navigator.userAgent;
-                if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent.match(/android/i)) {
+                if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent.match(/android/i) || (e.pageY && e.pageX) == undefined) {
                     pageX = e.originalEvent.touches[0].pageX;
                     pageY = e.originalEvent.touches[0].pageY;
                 } else {
@@ -468,7 +519,7 @@
 					var imgTop;
 					var imgLeft;
 					
-					if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent.match(/android/i)) {
+					if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent.match(/android/i) (e.pageY && e.pageX) == undefined) {
                         imgTop = e.originalEvent.touches[0].pageY + pos_y - drg_h;
                         imgLeft = e.originalEvent.touches[0].pageX + pos_x - drg_w;
                     } else {
@@ -615,59 +666,99 @@
 					rotation:that.actualRotation
 				};
 			
-			var formData = new FormData();
-
-			for (var key in cropData) {
-				if( cropData.hasOwnProperty(key) ) {
-						formData.append( key , cropData[key] );
-				}
-			}
+			var formData;
 			
-			for (var key in that.options.cropData) {
-				if( that.options.cropData.hasOwnProperty(key) ) {
-						formData.append( key , that.options.cropData[key] );
+			if(typeof FormData == 'undefined'){
+				var XHR = new XMLHttpRequest();
+				var urlEncodedData = "";
+				var urlEncodedDataPairs = [];
+				
+				for(var key in cropData) {
+				  urlEncodedDataPairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(cropData[key]));
 				}
-			}
 
-			$.ajax({
-                url: that.options.cropUrl,
-                data: formData,
-                context: document.body,
-                cache: false,
-                contentType: false,
-                processData: false,
-                type: 'POST'
-				}).always(function(data){
-					response = typeof data =='object' ? data : jQuery.parseJSON(data);
-					
-					if(response.status=='success'){
-						if (that.options.imgEyecandy)
-						    that.imgEyecandy.hide();
-						
-						that.options.loadPictureBackUp = '';
-						that.outputDiv.find('.cropControlRestoreDefaultImage').hide();
-						that.destroy();
-						
-						that.obj.append('<img class="croppedImg" src="'+response.url+'">');
-						if(that.options.outputUrlId !== ''){	$('#'+that.options.outputUrlId).val(response.url);	}
-						
-						that.croppedImg = that.obj.find('.croppedImg');
-
-						that.init();
-						
-						that.hideLoader();
-
-					}
-					if(response.status=='error'){
-						if (that.options.onError) that.options.onError.call(that,response.message);
-						that.hideLoader();
-						setTimeout( function(){ that.reset(); },2000)											
-					}
-					
-					if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that);
-
+				for(var key in that.options.cropData) {
+				  urlEncodedDataPairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(that.options.cropData[key]));
+				}
+				urlEncodedData  = urlEncodedDataPairs.join('&').replace(/%20/g, '+');
+							
+				XHR.addEventListener('error', function(event) {
+					if (that.options.onError) that.options.onError.call(that,"XHR Request failed");
 				});
-		},
+				XHR.onreadystatechange=function(){
+				if (XHR.readyState==4 && XHR.status==200)
+					{
+						that.afterCrop(XHR.responseText);
+					}
+				}
+				XHR.open('POST', that.options.cropUrl);
+				XHR.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				XHR.setRequestHeader('Content-Length', urlEncodedData.length);
+				
+				XHR.send(urlEncodedData);
+				
+			}else{
+				formData = new FormData();
+				for (var key in cropData) {				
+					if( cropData.hasOwnProperty(key) ) {
+							formData.append( key , cropData[key] );
+					}
+				}
+				
+				for (var key in that.options.cropData) {
+					if( that.options.cropData.hasOwnProperty(key) ) {
+							formData.append( key , that.options.cropData[key] );
+					}
+				}
+				
+				$.ajax({
+					url: that.options.cropUrl,
+					data: formData,
+					context: document.body,
+					cache: false,
+					contentType: false,
+					processData: false,
+					type: 'POST'				
+				}).always(function (data) {
+					that.afterCrop(data);
+				});
+			}
+						
+			//
+        },
+		afterCrop: function (data) {
+            var that = this;
+			try {
+				response = jQuery.parseJSON(data);           	
+			}
+			catch(err) {
+				response = typeof data =='object' ? data : jQuery.parseJSON(data);           	
+			}	    
+           	
+            if (response.status == 'success') {
+
+                if (that.options.imgEyecandy)
+					that.imgEyecandy.hide();
+
+                that.destroy();
+				
+                that.obj.append('<img class="croppedImg" src="' + response.url + '">');
+                if (that.options.outputUrlId !== '') { $('#' + that.options.outputUrlId).val(response.url); }
+
+                that.croppedImg = that.obj.find('.croppedImg');
+
+                that.init();
+
+                that.hideLoader();
+		    }
+            if (response.status == 'error') {
+                if (that.options.onError) that.options.onError.call(that,response.message);
+				that.hideLoader();
+				setTimeout( function(){ that.reset(); },2000)	
+            }
+
+            if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that);
+        },
 		showLoader:function(){
 			var that = this;
 			
@@ -701,6 +792,114 @@
 			if( !$.isEmptyObject( that.loader ) ){   that.loader.remove(); }
 			if( !$.isEmptyObject( that.form ) ){   that.form.remove(); }
 			that.obj.html('');
-		}
+		},
+		isAjaxUploadSupported: function () {
+            var input = document.createElement("input");
+            input.type = "file";
+
+            return (
+                "multiple" in input &&
+                    typeof File != "undefined" &&
+                    typeof FormData != "undefined" &&
+                    typeof (new XMLHttpRequest()).upload != "undefined");
+        },
+        CreateFallbackIframe: function () {
+            var that = this;        
+			
+            if (!that.isAjaxUploadSupported()) { 
+
+                if (jQuery.isEmptyObject(that.iframeobj)) {
+                    var iframe = document.createElement("iframe");
+                    iframe.setAttribute("id", that.id + "_upload_iframe");
+                    iframe.setAttribute("name", that.id + "_upload_iframe");
+                    iframe.setAttribute("width", "0");
+                    iframe.setAttribute("height", "0");
+                    iframe.setAttribute("border", "0");
+                    iframe.setAttribute("src", "javascript:false;");
+                    iframe.style.display = "none";
+                    document.body.appendChild(iframe);
+                } else {
+                    iframe = that.iframeobj[0];
+                }
+
+                var myContent = '<!DOCTYPE html>'
+                                + '<html><head><title>Uploading File</title></head>'
+                                + '<body>'
+                                + '<form '
+                                + 'class="' + that.id + '_upload_iframe_form" '                               
+                                + 'name="' + that.id + '_upload_iframe_form" '
+                                + 'action="' + that.options.uploadUrl + '" method="post" '
+                                + 'enctype="multipart/form-data" encoding="multipart/form-data" style="display:none;">'
+                                + $("#" + that.id + '_imgUploadField')[0].outerHTML
+                                + '</form></body></html>';
+
+                iframe.contentWindow.document.open('text/htmlreplace');
+                iframe.contentWindow.document.write(myContent);
+                iframe.contentWindow.document.close();
+
+                that.iframeobj = $("#" + that.id + "_upload_iframe");                
+                that.iframeform = that.iframeobj.contents().find("html").find("." + that.id + "_upload_iframe_form");
+                
+                that.iframeform.on("change", "input", function () {                   
+					that.SubmitFallbackIframe(that);
+                });
+                that.iframeform.find("input")[0].attachEvent("onchange", function () {
+                    that.SubmitFallbackIframe(that);
+                });
+                
+                var eventHandlermyFile = function () {
+                    if (iframe.detachEvent)
+                        iframe.detachEvent("onload", eventHandlermyFile);
+                    else
+                        iframe.removeEventListener("load", eventHandlermyFile, false);
+
+                    var response = that.getIframeContentJSON(iframe);
+
+                    if (jQuery.isEmptyObject(that.modal)) {
+                        that.afterUpload(response);
+                    }
+                }
+
+                if (iframe.addEventListener)
+                    iframe.addEventListener("load", eventHandlermyFile, true);
+                if (iframe.attachEvent)
+                    iframe.attachEvent("onload", eventHandlermyFile);
+
+                return "#" + that.id + '_imgUploadField';
+                
+            } else {
+                return "";
+            }
+
+        },
+        SubmitFallbackIframe: function (that) {           
+            that.showLoader();
+			if(that.options.processInline && !that.options.uploadUrl){
+				if (that.options.onError){
+					that.options.onError.call(that,"processInline is not supported by your browser ");
+					that.hideLoader();
+				}
+			}else{
+				if (that.options.onBeforeImgUpload) that.options.onBeforeImgUpload.call(that);			
+				that.iframeform[0].submit();
+			}						
+        },
+        getIframeContentJSON: function (iframe) {
+            try {                
+                var doc = iframe.contentDocument ? iframe.contentDocument : iframe.contentWindow.document,
+	                response;
+
+                var innerHTML = doc.body.innerHTML;
+                if (innerHTML.slice(0, 5).toLowerCase() == "<pre>" && innerHTML.slice(-6).toLowerCase() == "</pre>") {
+                    innerHTML = doc.body.firstChild.firstChild.nodeValue;
+                }
+                response = jQuery.parseJSON(innerHTML);
+            } catch (err) {
+                response = { success: false };
+            }
+
+            return response;
+        }
+		
 	};
 })(window, document);

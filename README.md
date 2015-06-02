@@ -1,13 +1,31 @@
+Croppic
+=======
+
 see full documentation at http://www.croppic.net/
 
-works in IE 10+, chrome, firefox, safari and opera.
+Browser compatibility
+---------------------
 
-Currently in works:
+Croppic works in most major browsers (yes, now even in IE9):
 
-- Mobile Support
-- Backwards compatibility for older Browsers.
+- **IE8**: Untested
+- **IE9**: Works!
+- **IE10+**: Works!
+- **Safari 4+**: Works!
+- **Firefox 3+**: Works!
+- **Chrome 14+**: Works!
+- **Opera 15+**: Works!
+
+Support
+-------
+
+Please don't contact me by email for support. The right place to get support is here:
+[Croppic Issues](https://github.com/sconsult/croppic/issues) 
+
 
 MIT LICENCE
+-----------
+
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
 "Software"), to deal in the Software without restriction, including
