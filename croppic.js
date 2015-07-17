@@ -29,6 +29,7 @@
 			rotateControls: true,
 			modal:false,
 			customUploadButtonId:'',
+			customCropButtonId:'',
 			loaderHtml:'',
 			scaleToFill: true,
 			processInline: false,
@@ -447,6 +448,10 @@
 			
             var html;
 
+            if (that.options.customCropButtonId !== ""){
+            	cropControlCrop = "";
+            }
+
 			if(that.options.doubleZoomControls){
 				cropControlZoomMuchIn = '<i class="cropControlZoomMuchIn"></i>';
 				cropControlZoomMuchOut = '<i class="cropControlZoomMuchOut"></i>';
@@ -483,12 +488,16 @@
 	        that.cropControlZoomOut = that.cropControlsCrop.find('.cropControlRotateRight');
 	        that.cropControlZoomOut.on('click', function() { that.rotate(that.options.rotateFactor); });
 
-	        that.cropControlCrop = that.cropControlsCrop.find('.cropControlCrop');
+	        if (that.options.customCropButtonId !== ""){
+	        	that.cropControlCrop = $('#'+that.options.customCropButtonId);
+	        }else{
+	        	that.cropControlCrop = that.cropControlsCrop.find('.cropControlCrop');
+	        }
 			that.cropControlCrop.on('click',function(){ that.crop(); });
 
 			that.cropControlReset = that.cropControlsCrop.find('.cropControlReset');
 			that.cropControlReset.on('click',function(){ that.reset(); });				
-			
+				
 		},
 		initDrag:function(){
 			var that = this;
