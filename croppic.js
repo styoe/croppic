@@ -29,6 +29,7 @@
 			rotateControls: true,
 			modal:false,
 			customUploadButtonId:'',
+            customCropButtonId: '',
 			loaderHtml:'',
 			scaleToFill: true,
 			processInline: false,
@@ -414,7 +415,14 @@
 				cropControlRotateRight = '<i class="cropControlRotateRight"></i>';
 			}
 			
-			html =  '<div class="cropControls cropControlsCrop">'+ cropControlZoomMuchIn + cropControlZoomIn + cropControlZoomOut + cropControlZoomMuchOut + cropControlRotateLeft + cropControlRotateRight + cropControlCrop + cropControlReset + '</div>';
+            if(that.options.customCropButtonId ==='') {
+              html =  '<div class="cropControls cropControlsCrop">'+ cropControlZoomMuchIn + cropControlZoomIn + cropControlZoomOut + cropControlZoomMuchOut + cropControlRotateLeft + cropControlRotateRight + cropControlCrop + cropControlReset + '</div>';
+            } else {
+              html =  '<div class="cropControls cropControlsCrop">'+ cropControlZoomMuchIn + cropControlZoomIn + cropControlZoomOut + cropControlZoomMuchOut + cropControlRotateLeft + cropControlRotateRight + cropControlReset + '</div>';
+              $('#'+that.options.customCropButtonId).on('click', function(){
+                that.crop();
+              });
+            }
 						
 			that.obj.append(html);
 			
