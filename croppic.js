@@ -426,7 +426,7 @@
                 });
             }
 
-            if(that.options.cropControlResetBtn == true) {
+            if(that.options.cropControlResetBtn === true) {
                 myControls += cropControlReset;
             }
 
