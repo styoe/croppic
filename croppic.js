@@ -1,7 +1,7 @@
 /*
  * CROPPIC
- * dependancy: jQuery
- * author: Ognjen "Zmaj Džedaj" Božičković and Mat Steinlin
+ * dependency: jQuery
+ * authors: Ognjen "Zmaj Džedaj" Božičković and Mat Steinlin
  */
 
 (function (window, document) {
@@ -13,13 +13,14 @@
 		that.obj = $('#' + id);
 		that.outputDiv = that.obj;
 
-		// DEFAULT OPTIONS
+		// default options
 		that.options = {
 			uploadUrl:'',
 			uploadData:{},
 			cropUrl:'',
 			cropData:{},
 			outputUrlId:'',
+			
 			//styles
 			imgEyecandy:true,
 			imgEyecandyOpacity:0.2,
@@ -50,10 +51,10 @@
 			
 		};
 
-		// OVERWRITE DEFAULT OPTIONS
+		// overwrite the default options
 		for (i in options) that.options[i] = options[i];
 
-		// INIT THE WHOLE DAMN THING!!!
+		// initialize croppic
 		that.init();
 		
 	};
@@ -138,13 +139,13 @@
 			
 			var that = this;
 			
-			// CREATE UPLOAD IMG FORM
+			// create image upload form
             var formHtml = '<form class="' + that.id + '_imgUploadForm" style="visibility: hidden;">  <input type="file" name="img" id="' + that.id + '_imgUploadField">  </form>';
 			that.outputDiv.append(formHtml);
 			that.form = that.outputDiv.find('.'+that.id+'_imgUploadForm');
 			
 			
-			// CREATE FALLBACK IE9 IFRAME
+			// create a fallback for Internet Explorer 9 iFrames
             var fileUploadId = that.CreateFallbackIframe();
 			
 			that.imgUploadControl.off('click');
@@ -152,7 +153,8 @@
 				if (fileUploadId === "") {
                     that.form.find('input[type="file"]').trigger('click');
                 } else {
-                    //Trigger iframe file input click, otherwise access restriction error
+                	
+                    //trigger iframe file input click, otherwise access restriction error
                     that.iframeform.find('input[type="file"]').trigger('click');
                 }									
 			});						
@@ -225,7 +227,7 @@
 						// other modern browsers
 						formData = new FormData(that.form[0]);
 					} catch(e) {
-						// IE10 MUST have all form items appended as individual form key / value pairs
+						// Internet Explorer 10 MUST have all form items appended as individual form key / value pairs
 						formData = new FormData();
 						formData.append('img', that.form.find("input[type=file]")[0].files[0]);
 										
@@ -349,12 +351,10 @@
 		},
 		initCropper: function(){
 			var that = this;
-			
-			/*SET UP SOME VARS*/
 			that.img = that.obj.find('img');
 			that.img.wrap('<div class="cropImgWrapper" style="overflow:hidden; z-index:1; position:absolute; width:'+that.objW+'px; height:'+that.objH+'px;"></div>');
 	
-			/*INIT DRAGGING*/
+			// initialize dragging
 			that.createCropControls();
 			
 			if(that.options.imgEyecandy){ that.createEyecandy(); }
@@ -376,7 +376,7 @@
 			that.zoom(-that.imgInitW);
 			that.zoom(40);
 			
-			// Adding mousewheel zoom capabilities
+			// adding mousewheel zoom capabilities
 			if (that.options.enableMousescroll){
 				that.img.on('mousewheel', function(event) {
 					event.preventDefault();
@@ -393,7 +393,7 @@
 		createCropControls: function(){
 			var that = this;
 			
-			// CREATE CONTROLS
+			// create croppic controls
 			var cropControlZoomMuchIn =      '';
 			var cropControlZoomIn =          '<i class="cropControlZoomIn"></i>';
 			var cropControlZoomOut =         '<i class="cropControlZoomOut"></i>';
@@ -420,7 +420,7 @@
 			
 			that.cropControlsCrop = that.obj.find('.cropControlsCrop');
 
-			// CACHE AND BIND CONTROLS
+			// cache and bind the controls
 			if(that.options.doubleZoomControls){
 				that.cropControlZoomMuchIn = that.cropControlsCrop.find('.cropControlZoomMuchIn');
 				that.cropControlZoomMuchIn.on('click',function(){ that.zoom( that.options.zoomFactor*10 ); });
@@ -453,7 +453,7 @@
 			
 			that.img.on("mousedown touchstart", function(e) {
 				
-				e.preventDefault(); // disable selection
+				e.preventDefault();
 				
 				var pageX;
                 var pageY;
