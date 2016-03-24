@@ -55,31 +55,20 @@
 				display:block;
 				float:left;
 				margin:0;
-				cursor:pointer;
-				background-image:url('../img/cropperIcons.png');	
+				cursor:pointer;	
 				width:30px;
 				height:30px;
 				text-align:center;
 				line-height:20px;
 				color:#FFF;
-				font-size:13px;
-				font-weight: bold;
+				font-size: 24px;
+				padding: 3px;
+				font-weight: normal;
 				font-style: normal;
 				
 			}
 			
 			.cropControls i:hover{ background-color:rgba(0,0,0,0.7);  }
-			
-			.cropControls i.cropControlZoomMuchIn{ background-position:0px 0px;}
-			.cropControls i.cropControlZoomIn{ background-position:-30px 0px; }
-			.cropControls i.cropControlZoomOut{ background-position:-60px 0px; }
-			.cropControls i.cropControlZoomMuchOut{ background-position:-90px 0px; }
-			.cropControls i.cropControlRotateLeft{ background-position:-210px 0px; }
-			.cropControls i.cropControlRotateRight{ background-position:-240px 0px; }
-			.cropControls i.cropControlCrop{ background-position:-120px 0px;}
-			.cropControls i.cropControlUpload{ background-position:-150px 0px;}
-			.cropControls i.cropControlReset{ background-position:-180px 0px;}
-			.cropControls i.cropControlRemoveCroppedImage{ background-position:-180px 0px;}
 			
 			.cropControls i:last-child{
 				margin-right:none;
@@ -243,6 +232,72 @@
 
 			}
 			
+@font-face {
+	font-family: 'croppic';
+	src:url('../icons/croppic.eot?v1');
+	src:url('../icons/croppic.eot?#iefixv1') format('embedded-opentype'),
+		url('../icons/croppic.woff?v1') format('woff'),
+		url('../icons/croppic.ttf?v1') format('truetype'),
+		url('../icons/croppic.svg?v1#croppic') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.cropControls i {
+	font-family: 'croppic';
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+
+	/* Better Font Rendering =========== */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.cropControlRemoveCroppedImage:before {
+	content: "\e609";
+}
+
+.cropControlRotateLeft:before {
+	content: "\e601";
+}
+
+.cropControlRotateRight:before {
+	content: "\e602";
+}
+
+.cropControlReset:before {
+	content: "\e600";
+}
+
+.cropControlUpload:before {
+	content: "\e603";
+}
+
+.cropControlZoomMuchOut:before {
+	content: "\e604";
+}
+
+.cropControlZoomOut:before {
+	content: "\e605";
+}
+
+.cropControlZoomMuchIn:before {
+	content: "\e606";
+}
+
+.cropControlZoomIn:before {
+	content: "\e607";
+}
+
+.cropControlCrop:before {
+	content: "\e608";
+}
+
+
 			
 			/* some reset stlyes */
 			
