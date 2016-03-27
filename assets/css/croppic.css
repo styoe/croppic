@@ -8,7 +8,7 @@
 				box-sizing: content-box;
 				-moz-box-sizing: content-box;
 				border-radius: 2px;
-				background-image: url(../img/placeholder.png);
+				background-image: url('../img/placeholder.png');
 				background-repeat: no-repeat;
 				background-position: center;
 				box-shadow: 8px 8px 0px rgba(0,0,0,0.1);
@@ -70,19 +70,19 @@
 			
 			.cropControls i:hover{ background-color:rgba(0,0,0,0.7);  }
 			
-			.cropControls i.cropControlZoomMuchIn{ background-position:0px 0px;}
-			.cropControls i.cropControlZoomIn{ background-position:-30px 0px; }
-			.cropControls i.cropControlZoomOut{ background-position:-60px 0px; }
-			.cropControls i.cropControlZoomMuchOut{ background-position:-90px 0px; }
-			.cropControls i.cropControlRotateLeft{ background-position:-210px 0px; }
-			.cropControls i.cropControlRotateRight{ background-position:-240px 0px; }
-			.cropControls i.cropControlCrop{ background-position:-120px 0px;}
-			.cropControls i.cropControlUpload{ background-position:-150px 0px;}
-			.cropControls i.cropControlReset{ background-position:-180px 0px;}
-			.cropControls i.cropControlRemoveCroppedImage{ background-position:-180px 0px;}
+			.cropControls i.cropControlZoomMuchIn{ background-position:0 0;}
+			.cropControls i.cropControlZoomIn{ background-position:-30px 0; }
+			.cropControls i.cropControlZoomOut{ background-position:-60px 0; }
+			.cropControls i.cropControlZoomMuchOut{ background-position:-90px 0; }
+			.cropControls i.cropControlRotateLeft{ background-position:-210px 0; }
+			.cropControls i.cropControlRotateRight{ background-position:-240px 0; }
+			.cropControls i.cropControlCrop{ background-position:-120px 0;}
+			.cropControls i.cropControlUpload{ background-position:-150px 0;}
+			.cropControls i.cropControlReset{ background-position:-180px 0;}
+			.cropControls i.cropControlRemoveCroppedImage{ background-position:-180px 0;}
 			
 			.cropControls i:last-child{
-				margin-right:none;
+				margin-right: 0;
 			}
 			
 			#croppicModal{
@@ -120,7 +120,7 @@
 				height: 10px;
 				margin: 25px auto;
 				background: #FFF;
-				box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
+				box-shadow: 5px 5px 0 rgba(0,0,0,0.2);
 				-moz-border-radius: 50px;
 				-moz-animation: bubblingG 1s infinite alternate;
 				-webkit-border-radius: 50px;
@@ -135,11 +135,11 @@
 			}
 
 			#bubblingG_1 {
-				-moz-animation-delay: 0s;
-				-webkit-animation-delay: 0s;
-				-ms-animation-delay: 0s;
-				-o-animation-delay: 0s;
-				animation-delay: 0s;
+				-moz-animation-delay: 0;
+				-webkit-animation-delay: 0;
+				-ms-animation-delay: 0;
+				-o-animation-delay: 0;
+				animation-delay: 0;
 			}
 
 			#bubblingG_2 {
