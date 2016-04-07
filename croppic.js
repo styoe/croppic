@@ -36,6 +36,7 @@
 			loadPicture:'',
 			onReset: null,
 			enableMousescroll: false, 			
+			fitToLongest: false,
 			
 			//callbacks
 			onBeforeImgUpload: null,
@@ -389,6 +390,68 @@
 			that.img.css({'left': -(that.imgW -that.objW)/2, 'top': -(that.imgH -that.objH)/2, 'position':'relative'});
 			if(that.options.imgEyecandy){ that.imgEyecandy.css({'left': -(that.imgW -that.objW)/2, 'top': -(that.imgH -that.objH)/2, 'position':'relative'}); }
 			
+			// Resize image to fit object's longest side
+			var resize = function(newTop, newLeft, newWidth, newHeight) {
+				that.img.css({
+					'top': newTop,
+					'left': newLeft
+				}); 
+				
+				if (that.options.imgEyecandy){
+					that.imgEyecandy.width(newWidth);
+					that.imgEyecandy.height(newHeight);
+					that.imgEyecandy.css({
+						'top': newTop,
+						'left': newLeft
+					}); 
+				}
+			};
+			
+			var resizeToWidth = function() {
+				var ratio = (that.imgW / that.imgH);
+				var newWidth = that.objW;
+				var newHeight = (newWidth / ratio);
+				
+				that.imgW = newWidth;
+				that.img.width(newWidth); 
+				
+				that.imgH = newHeight;
+				that.img.height(newHeight); 
+				
+				var newTop = that.objH - (newHeight / 2);
+				var newLeft = 0;
+				
+				newTop = (newTop > 0 ? 0 : newTop);
+				
+				resize(newTop, newLeft, newWidth, newHeight);
+			};
+			
+			var resizeToHeight = function() {
+				var newHeight = that.objH;
+				var ratio = (newHeight / that.imgH);
+				var newWidth = (that.imgW * ratio);
+				
+				that.imgW = newWidth;
+				that.img.width(newWidth); 
+				
+				that.imgH = newHeight;
+				that.img.height(newHeight); 
+				
+				var newTop = 0;
+				var newLeft = (that.objW / 2) - (newWidth / 2);
+				
+				newLeft = (newLeft < 0 ? 0 : newLeft);
+				
+				resize(newTop, newLeft, newWidth, newHeight);
+			};
+			
+			if (that.options.fitToLongest) {
+				if (that.objW >= that.objH) {
+					resizeToWidth();
+				} else {
+					resizeToHeight();
+				}
+			}
 		},
 		
 		createCropControls: function(){
