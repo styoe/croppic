@@ -1,0 +1,28 @@
+
+{
+  "name": "croppic",
+  "homepage": "http://www.croppic.net",
+  "version": "1.0.3",
+  "authors": [
+    "Mat Steinlin <mat@steinlinconsulting.com> (http://www.steinlincosnulting.com)",
+    "Ognjen Božičković"
+  ],
+  "description": "The image cropping jquery plugin that will satisfy your needs and much more",  
+  "license": "MIT",  
+  "main": "croppic.js",
+  "keywords": [
+    "croppic",
+    "crop",
+    "scale",
+    "rotate",
+    "move",
+    "zoom",
+    "image",
+    "jquery"
+  ],
+  "dependencies": {
+    "jquery-mousewheel": "~3.1.12",
+    "jquery": ">= 2.1.3"  
+  },
+  "repository": "https://github.com/sconsult/croppic"
+}

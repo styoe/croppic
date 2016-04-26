@@ -1,0 +1,38 @@
+vendor/
+
+# jetbrains
+.idea/
+.idea_modules/
+*.ipr
+*.iws
+*.iml
+atlassian-ide-plugin.xml
+com_crashlytics_export_strings.xml
+
+# vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+# sublime text
+*.sublime-workspace
+*.sublime-project
+
+# system files
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+*.bak
+*.swp
+*.orig
+Thumbs.db
+
+# vcs
+.svn
+.cvs
