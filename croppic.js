@@ -48,7 +48,16 @@
 			onBeforeRemoveCroppedImg: null,
 			onAfterRemoveCroppedImg: null,
 			onError: null,
-			
+            controlTitles: {
+                zoomIn: 'zoom in',
+                zoomOut: 'zoom out',
+                doubleZoomIn: 'double zoom in',
+                doubleZoomOut: 'double zoom out',
+                rotateLeft: 'rotate left',
+                rotateRight: 'rotate right',
+                crop: 'crop',
+                reset: 'reset',
+            },
 		};
 
 		// OVERWRITE DEFAULT OPTIONS
@@ -396,23 +405,23 @@
 			
 			// CREATE CONTROLS
 			var cropControlZoomMuchIn =      '';
-			var cropControlZoomIn =          '<i class="cropControlZoomIn"></i>';
-			var cropControlZoomOut =         '<i class="cropControlZoomOut"></i>';
+			var cropControlZoomIn =          '<i class="cropControlZoomIn" title="'+ that.options.controlTitles.zoomIn +'"></i>';
+			var cropControlZoomOut =         '<i class="cropControlZoomOut" title="'+ that.options.controlTitles.zoomOut +'"></i>';
 			var cropControlZoomMuchOut =     '';
 			var cropControlRotateLeft =      '';
 	        var cropControlRotateRight =     '';
-	        var cropControlCrop =            '<i class="cropControlCrop"></i>';
-			var cropControlReset =           '<i class="cropControlReset"></i>';
+	        var cropControlCrop =            '<i class="cropControlCrop" title="'+ that.options.controlTitles.crop +'"></i>';
+			var cropControlReset =           '<i class="cropControlReset" title="'+ that.options.controlTitles.reset +'"></i>';
 			
             var html;
             
 			if(that.options.doubleZoomControls){
-				cropControlZoomMuchIn = '<i class="cropControlZoomMuchIn"></i>';
-				cropControlZoomMuchOut = '<i class="cropControlZoomMuchOut"></i>';
+				cropControlZoomMuchIn = '<i class="cropControlZoomMuchIn" title="'+ that.options.controlTitles.doubleZoomIn +'"></i>';
+				cropControlZoomMuchOut = '<i class="cropControlZoomMuchOut" title="'+ that.options.controlTitles.doubleZoomOut +'"></i>';
 			}
 			if(that.options.rotateControls){
-				cropControlRotateLeft = '<i class="cropControlRotateLeft"></i>';
-				cropControlRotateRight = '<i class="cropControlRotateRight"></i>';
+				cropControlRotateLeft = '<i class="cropControlRotateLeft" title="'+ that.options.controlTitles.rotateLeft +'"></i>';
+				cropControlRotateRight = '<i class="cropControlRotateRight" title="'+ that.options.controlTitles.rotateRight +'"></i>';
 			}
 			
 			html =  '<div class="cropControls cropControlsCrop">'+ cropControlZoomMuchIn + cropControlZoomIn + cropControlZoomOut + cropControlZoomMuchOut + cropControlRotateLeft + cropControlRotateRight + cropControlCrop + cropControlReset + '</div>';
