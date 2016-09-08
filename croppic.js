@@ -313,10 +313,10 @@
 				img.load(function(){
 					that.initCropper();
 					that.hideLoader();
-					if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+					if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that, response);
 				});
                                 
-                if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+                if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that, response);
 
             }
 
