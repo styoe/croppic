@@ -20,6 +20,7 @@
 			cropUrl:'',
 			cropData:{},
 			outputUrlId:'',
+			imgUrlInit: null,
 			//styles
 			imgEyecandy:true,
 			imgEyecandyOpacity:0.2,
@@ -56,6 +57,15 @@
 
 		// INIT THE WHOLE DAMN THING!!!
 		that.init();
+		
+		// INIT WITH AN IMAGE ON PLUGIN
+		if(that.options.imgUrlInit){
+			that.destroy();
+			that.obj.append('<img class="croppedImg" src="'+that.options.imgUrlInit+'">');
+			$('#'+that.options.outputUrlId).val(that.options.imgUrlInit);
+			that.croppedImg = that.obj.find('.croppedImg');
+			that.init();
+		}
 		
 	};
 
