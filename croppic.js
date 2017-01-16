@@ -544,63 +544,55 @@
 			var ratio = that.imgW / that.imgH;
 			var newWidth = that.imgW+x;
 			var newHeight = newWidth/ratio;
-			var doPositioning = true;
-			
+
 			if( newWidth < that.objW || newHeight < that.objH){
-				
-				if( newWidth - that.objW < newHeight - that.objH ){ 
+				if( newWidth - that.objW < newHeight - that.objH ){
+				    x = that.objW - that.imgW;
 					newWidth = that.objW;
 					newHeight = newWidth/ratio;
 				}else{
+				    x = (that.objH - that.imgH)*ratio;
 					newHeight = that.objH;
 					newWidth = ratio * newHeight;
 				}
-				
-				doPositioning = false;
-				
-			} 
-			
+
+			}
+
 			if(!that.options.scaleToFill && (newWidth > that.imgInitW || newHeight > that.imgInitH)){
-				
-				if( newWidth - that.imgInitW < newHeight - that.imgInitH ){ 
+				if( newWidth - that.imgInitW < newHeight - that.imgInitH ){
+				    x = that.imgInitW - that.imgW;
 					newWidth = that.imgInitW;
 					newHeight = newWidth/ratio;
 				}else{
+				    x = (that.imgInitH - that.imgH)*ratio;
 					newHeight = that.imgInitH;
 					newWidth = ratio * newHeight;
 				}
-				
-				doPositioning = false;
-				
 			}
-			
+
 			that.imgW = newWidth;
-			that.img.width(newWidth); 
-			
+			that.img.width(newWidth);
+
 			that.imgH = newHeight;
-			that.img.height(newHeight); 
-	
-			var newTop = parseInt( that.img.css('top') ) - x/2;
+			that.img.height(newHeight);
+
+			var newTop = parseInt( that.img.css('top') ) - (x/ratio)/2;
 			var newLeft = parseInt( that.img.css('left') ) - x/2;
-			
+
 			if( newTop>0 ){ newTop=0;}
 			if( newLeft>0 ){ newLeft=0;}
-			
+
 			var maxTop = -( newHeight-that.objH); if( newTop < maxTop){	newTop = maxTop;	}
 			var maxLeft = -( newWidth-that.objW); if( newLeft < maxLeft){	newLeft = maxLeft;	}
-			
-			if( doPositioning ){
-				that.img.css({'top':newTop, 'left':newLeft}); 
-			}
-			
+
+			that.img.css({'top':newTop, 'left':newLeft});
+
 			if(that.options.imgEyecandy){
 				that.imgEyecandy.width(newWidth);
 				that.imgEyecandy.height(newHeight);
-				if( doPositioning ){
-					that.imgEyecandy.css({'top':newTop, 'left':newLeft}); 
-				}
-			}	
-			
+				that.imgEyecandy.css({'top':newTop, 'left':newLeft});
+			}
+
 			if (that.options.onImgZoom) that.options.onImgZoom.call(that);
 
 		},
