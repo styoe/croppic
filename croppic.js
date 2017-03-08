@@ -718,10 +718,10 @@
 				imgUrl:that.imgUrl,
 				imgInitW:that.imgInitW,
 				imgInitH:that.imgInitH,
-				imgW:that.imgW,
-				imgH:that.imgH,
-				imgY1:Math.abs(parseInt(that.img.css('top'))),
-				imgX1:Math.abs(parseInt(that.img.css('left'))),
+				imgW:that.imgW+3,
+				imgH:that.imgH+3,
+				imgY1:Math.abs(parseInt(that.img.css('top'))-1),
+				imgX1:Math.abs(parseInt(that.img.css('left'))-1),
 				cropH:that.objH,
 				cropW:that.objW,
 				rotation:that.actualRotation
@@ -881,9 +881,9 @@
 
             return(
                 "multiple" in input &&
-                    typeof File != "undefined" &&
-                    typeof FormData != "undefined" &&
-                    typeof (new XMLHttpRequest()).upload != "undefined");
+                    typeof File !== "undefined" &&
+                    typeof FormData !== "undefined" &&
+                    typeof (new XMLHttpRequest()).upload !== "undefined");
         },
         CreateFallbackIframe: function(){
             var that = this;        
@@ -904,16 +904,7 @@
                     iframe = that.iframeobj[0];
                 }
 
-                var myContent = '<!DOCTYPE html>'
-                                + '<html><head><title>Uploading File</title></head>'
-                                + '<body>'
-                                + '<form '
-                                + 'class="' + that.id + '_upload_iframe_form" '                               
-                                + 'name="' + that.id + '_upload_iframe_form" '
-                                + 'action="' + that.options.uploadUrl + '" method="post" '
-                                + 'enctype="multipart/form-data" encoding="multipart/form-data" style="display:none;">'
-                                + $("#" + that.id + '_imgUploadField')[0].outerHTML
-                                + '</form></body></html>';
+                var myContent = '<!DOCTYPE html>' + '<html><head><title>Uploading File</title></head>' + '<body>' + '<form class="' + that.id + '_upload_iframe_form" name="' + that.id + '_upload_iframe_form" action="' + that.options.uploadUrl + '" method="post" enctype="multipart/form-data" encoding="multipart/form-data" style="display:none;">' + $("#" + that.id + '_imgUploadField')[0].outerHTML + '</form></body></html>';
 
                 iframe.contentWindow.document.open('text/htmlreplace');
                 iframe.contentWindow.document.write(myContent);
