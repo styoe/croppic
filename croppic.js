@@ -494,6 +494,7 @@
 
 			that.cropControlReset = that.cropControlsCrop.find('.cropControlReset');
 			that.cropControlReset.on('click',function(){
+				delete that.options['loadPicture'];
 				that.reset();
 			});				
 		},
