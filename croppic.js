@@ -111,7 +111,7 @@ jQuery.fn.extend({
 
         init: function () {
             var that = this;
-
+            that.imageMoved = false;
             if (that.options.cropW > 0 || that.options.cropH > 0) {
                 that.objW = that.options.cropW;
                 that.objH = that.options.cropH;
@@ -157,6 +157,7 @@ jQuery.fn.extend({
             }
 
         },
+
         bindImgUploadControl: function () {
 
             var that = this;
@@ -291,6 +292,7 @@ jQuery.fn.extend({
             });
 
         },
+
         loadExistingImage: function () {
             var that = this;
 
@@ -328,6 +330,7 @@ jQuery.fn.extend({
             }
 
         },
+
         afterUpload: function (data) {
             var that = this;
 
@@ -357,6 +360,7 @@ jQuery.fn.extend({
                 setTimeout(function () { that.reset(); }, 2000);
             }
         },
+
         createModal: function () {
             var that = this;
 
@@ -370,12 +374,14 @@ jQuery.fn.extend({
             that.obj = $('#croppicModalObj');
 
         },
+
         destroyModal: function () {
             var that = this;
             that.obj = that.outputDiv;
             that.modal.remove();
             that.modal = {};
         },
+
         initCropper: function () {
             var that = this;
             /*SET UP SOME VARS*/
@@ -387,20 +393,23 @@ jQuery.fn.extend({
             that.initDrag();
             that.initialScaleImg();
         },
+
         createEyecandy: function () {
             var that = this;
             that.imgEyecandy = that.img.clone();
             that.imgEyecandy.css({ 'z-index': '0', 'opacity': that.options.imgEyecandyOpacity }).appendTo(that.obj);
         },
+
         destroyEyecandy: function () {
             var that = this;
             that.imgEyecandy.remove();
         },
+
         initialScaleImg: function () {
             var that = this;
             if (that.options.zoom > 0) {
-                that.zoom(-that.imgInitW);
-                that.zoom(that.options.zoom);
+                that.zoom(-that.imgInitW, true);
+                that.zoom(that.options.zoom , true);
             }
             // Adding mousewheel zoom capabilities
             if (that.options.enableMousescroll) {
@@ -414,6 +423,7 @@ jQuery.fn.extend({
             if (that.options.imgEyecandy) { that.imgEyecandy.css({ 'left': -(that.imgW - that.objW) / 2, 'top': -(that.imgH - that.objH) / 2, 'position': 'relative' }); }
 
         },
+
         createCropControls: function () {
             var that = this;
             // CREATE CONTROLS
@@ -468,11 +478,13 @@ jQuery.fn.extend({
             that.cropControlReset.on('click', function () { that.reset(); });
 
         },
+
         initDrag: function () {
             var that = this;
             that.img.on("mousedown touchstart", function (e) {
 
                 e.preventDefault(); // disable selection
+                that.imageMoved = true;
                 var pageX;
                 var pageY;
                 var userAgent = window.navigator.userAgent;
@@ -539,6 +551,7 @@ jQuery.fn.extend({
             });
 
         },
+
         rotate: function (x) {
             var that = this;
             that.actualRotation += x;
@@ -557,32 +570,48 @@ jQuery.fn.extend({
             if (typeof that.options.onImgRotate == 'function')
                 that.options.onImgRotate.call(that);
         },
-        zoom: function (x) {
+
+        zoom: function (x, isInitialScaleImg) {
             var that = this;
             var ratio = that.imgW / that.imgH;
             var newWidth = that.imgW + x;
             var newHeight = newWidth / ratio;
             var doPositioning = true;
 
-            if (newHeight < that.objH && x < 0 && x !== (that.imgInitW*-1)) {
-                newHeight = that.objH;
-                newWidth = newWidth - x;
-                doPositioning = false;
-            } 
+            if (isInitialScaleImg) {
+                if (newWidth < that.objW || newHeight < that.objH) {
+                    if (newWidth - that.objW < newHeight - that.objH) {
+                        newWidth = that.objW;
+                        newHeight = newWidth / ratio;
+                    } else {
+                        newHeight = that.objH;
+                        newWidth = ratio * newHeight;
+                    }
+                    doPositioning = false;
 
-            if (newWidth < that.objW && newHeight < that.objH) {
-
-                if (that.imgW > that.imgH) {  // landscape
-                    newWidth = that.objW;
-                    newHeight = newWidth / ratio;
-                } else {  // portrait
+                }
+            } else {
+                if (newHeight < that.objH && x < 0 && x !== (that.imgInitW * -1)) {
                     newHeight = that.objH;
-                    newWidth = newHeight * ratio;
+                    newWidth = newWidth - x;
+                    doPositioning = false;
                 }
 
-                doPositioning = false;
+                if (newWidth < that.objW && newHeight < that.objH) {
 
+                    if (that.imgW > that.imgH) {  // landscape
+                        newWidth = that.objW;
+                        newHeight = newWidth / ratio;
+                    } else {  // portrait
+                        newHeight = that.objH;
+                        newWidth = newHeight * ratio;
+                    }
+
+                    doPositioning = false;
+
+                }
             }
+           
 
             if (!that.options.scaleToFill && (newWidth > that.imgInitW || newHeight > that.imgInitH)) {
                 if (newWidth - that.imgInitW < newHeight - that.imgInitH) {
@@ -610,10 +639,17 @@ jQuery.fn.extend({
             if (newTop > 0) { newTop = 0; }
             if (newLeft > 0) { newLeft = 0; }
 
+
+
             var maxTop = -(newHeight - that.objH); if (newTop < maxTop) { newTop = maxTop; }
             var maxLeft = -(newWidth - that.objW); if (newLeft < maxLeft) { newLeft = maxLeft; }
 
-            if (doPositioning) {
+            if (!that.imageMoved) {
+                newLeft = (that.objW / 2) - (newWidth / 2);
+                newTop = (that.objH / 2) - (newHeight / 2);
+            }
+            
+            if (doPositioning || !that.imageMoved) {
                 that.img.css({ 'top': newTop, 'left': newLeft });
             }
 
