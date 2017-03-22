@@ -724,6 +724,7 @@
           width: data.imgW+'px',
           top: -data.imgY1+'px',
           left: -data.imgX1+'px',
+          transform: 'rotate('+data.rotation+'deg)',
           position: 'relative'
         };
         that.croppedImg.css(croppedImgCSS);
