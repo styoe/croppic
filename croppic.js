@@ -20,22 +20,27 @@
       cropUrl:'',
       cropData:{},
       outputUrlId:'',
+      passthrough: false,
+      yieldCropData: null,
       //styles
       imgEyecandy:true,
       imgEyecandyOpacity:0.2,
-      initialZoom:40,
       zoomFactor:10,
       rotateFactor:5,
       doubleZoomControls:true,
       rotateControls: true,
-      modal:false,
+      modal: false,
+      customModal: false,
+      modalHTML: '',
       customUploadButtonId:'',
+      customImgOutput: false,
+      customImgOuptutTarget: null,
       loaderHtml:'',
       scaleToFill: true,
       processInline: false,
       loadPicture:'',
       onReset: null,
-      enableMousescroll: false, 			
+      enableMousescroll: false,
 
       //callbacks
       onBeforeImgUpload: null,
@@ -87,8 +92,8 @@
     cropControlZoomIn:{},
     cropControlZoomOut:{},
     cropControlCrop:{},
-    cropControlReset:{},	
-    cropControlRemoveCroppedImage:{},	
+    cropControlReset:{},
+    cropControlRemoveCroppedImage:{},
     modal:{},
     loader:{},
 
@@ -105,11 +110,11 @@
 
       that.createImgUploadControls();
 
-      if( $.isEmptyObject(that.options.loadPicture)){				
+      if( $.isEmptyObject(that.options.loadPicture)){
         that.bindImgUploadControl();
-      }else{				
+      }else{
         that.loadExistingImage();
-      }			
+      }
 
     },
     createImgUploadControls: function(){
@@ -140,27 +145,31 @@
       var that = this;
 
       // CREATE UPLOAD IMG FORM
-      var formHtml = '<form class="' + that.id + '_imgUploadForm" style="visibility: hidden;">  <input type="file" name="img" id="' + that.id + '_imgUploadField">  </form>';
-      that.outputDiv.append(formHtml);
-      that.form = that.outputDiv.find('.'+that.id+'_imgUploadForm');
+      if (that.options.passthrough) {
+        that.form = $(that.obj).parents('form');
+      } else {
+        var formHtml = '<form class="' + that.id + '_imgUploadForm" style="visibility: hidden;">  <input type="file" name="img" id="' + that.id + '_imgUploadField">  </form>';
+        that.outputDiv.append(formHtml);
+        that.form = that.outputDiv.find('.'+that.id+'_imgUploadForm');
+      }
 
 
       // CREATE FALLBACK IE9 IFRAME
       var fileUploadId = that.CreateFallbackIframe();
 
       that.imgUploadControl.off('click');
-      that.imgUploadControl.on('click',function(){ 
+      that.imgUploadControl.on('click',function(){
         if (fileUploadId === "") {
           that.form.find('input[type="file"]').trigger('click');
         } else {
           //Trigger iframe file input click, otherwise access restriction error
           that.iframeform.find('input[type="file"]').trigger('click');
-        }									
-      });						
+        }
+      });
 
       if( !$.isEmptyObject(that.croppedImg)){
 
-        that.cropControlRemoveCroppedImage.on('click',function(){ 
+        that.cropControlRemoveCroppedImage.on('click',function(){
           if (typeof (that.options.onBeforeRemoveCroppedImg) === typeof(Function)) {
             that.options.onBeforeRemoveCroppedImg.call(that);
           }
@@ -173,30 +182,29 @@
             that.options.onAfterRemoveCroppedImg.call(that);
           }
 
-          if( !$.isEmptyObject(that.defaultImg)){ 
+          if( !$.isEmptyObject(that.defaultImg)){
             that.obj.append(that.defaultImg);
           }
 
           if(that.options.outputUrlId !== ''){	$('#'+that.options.outputUrlId).val('');	}
 
-        });	
+        });
 
       }
 
       that.form.find('input[type="file"]').change(function(){
-
         if (that.options.onBeforeImgUpload) that.options.onBeforeImgUpload.call(that);
 
         that.showLoader();
         that.imgUploadControl.hide();
 
-        if(that.options.processInline){			
+        if(that.options.processInline){
           // Checking Browser Support for FileReader API
           if (typeof FileReader == "undefined"){
             if (that.options.onError) that.options.onError.call(that,"processInline is not supported by your Browser");
             that.reset();
-          }else{					
-            var reader = new FileReader();					
+          }else{
+            var reader = new FileReader();
             reader.onload = function (e) {
               var image = new Image();
               image.src = e.target.result;
@@ -204,7 +212,7 @@
                 that.imgInitW = that.imgW = image.width;
                 that.imgInitH = that.imgH = image.height;
 
-                if(that.options.modal){	that.createModal(); }
+                if(that.options.modal){ that.createModal(); }
                 if( !$.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
 
                 that.imgUrl=image.src;
@@ -220,7 +228,7 @@
             };
             reader.readAsDataURL(that.form.find('input[type="file"]')[0].files[0]);
           }
-        } else {		
+        } else {
 
           try {
             // other modern browsers
@@ -234,9 +242,9 @@
 
           for (var key in that.options.uploadData) {
             if( that.options.uploadData.hasOwnProperty(key) ) {
-              formData.append( key , that.options.uploadData[key] );	
+              formData.append( key , that.options.uploadData[key] );
             }
-          }										
+          }
 
           $.ajax({
             url: that.options.uploadUrl,
@@ -273,20 +281,20 @@
           that.initCropper();
           that.hideLoader();
           if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
-        });	
+        });
 
-      }else{					
-        that.cropControlRemoveCroppedImage.on('click',function(){ 
+      }else{
+        that.cropControlRemoveCroppedImage.on('click',function(){
           that.croppedImg.remove();
           $(this).hide();
 
-          if( !$.isEmptyObject(that.defaultImg)){ 
+          if( !$.isEmptyObject(that.defaultImg)){
             that.obj.append(that.defaultImg);
-          }					
+          }
           if(that.options.outputUrlId !== ''){	$('#'+that.options.outputUrlId).val('');	}
           that.croppedImg = '';
           that.reset();
-        });	
+        });
       }
 
     },
@@ -324,7 +332,7 @@
         alert(response.message);
         if (that.options.onError) that.options.onError.call(that,response.message);
         that.hideLoader();
-        setTimeout( function(){ that.reset(); },2000)	
+        setTimeout( function(){ that.reset(); },2000)
       }
     },
 
@@ -332,7 +340,14 @@
       var that = this;
 
       var marginTop = that.windowH/2-that.objH/2;
-      var modalHTML =  '<div id="croppicModal">'+'<div id="croppicModalObj" style="width:'+ that.objW +'px; height:'+ that.objH +'px; margin:0 auto; margin-top:'+ marginTop +'px; position: relative;"> </div>'+'</div>';
+
+      var modalHTML = '';
+
+      if (that.options.customModal){
+        modalHTML = that.options.modalHTML;
+      } else {
+        modalHTML = '<div id="croppicModal">'+'<div id="croppicModalObj" style="width:'+ that.objW +'px; height:'+ that.objH +'px; margin:0 auto; margin-top:'+ marginTop +'px; position: relative;"> </div>'+'</div>';
+      }
 
       $('body').append(modalHTML);
 
@@ -340,7 +355,9 @@
 
       that.obj = $('#croppicModalObj');
 
+      that.obj.css({width: that.objW+'px', height: that.objH+'px', position: 'relative'});
     },
+
     destroyModal: function(){
       var that = this;
 
@@ -375,13 +392,13 @@
     initialScaleImg:function(){
       var that = this;
       that.zoom(-that.imgInitW);
-      that.zoom(that.options.initialZoom);
+      that.zoom(40);
 
       // Adding mousewheel zoom capabilities
       if (that.options.enableMousescroll){
         that.img.on('mousewheel', function(event) {
           event.preventDefault();
-          that.zoom(that.options.zoomFactor*event.deltaY);				
+          that.zoom(that.options.zoomFactor*event.deltaY);
         });
       }
       // initial center image
@@ -434,7 +451,7 @@
       that.cropControlZoomIn.on('click',function(){ that.zoom(that.options.zoomFactor); });
 
       that.cropControlZoomOut = that.cropControlsCrop.find('.cropControlZoomOut');
-      that.cropControlZoomOut.on('click',function(){ that.zoom(-that.options.zoomFactor); });		
+      that.cropControlZoomOut.on('click',function(){ that.zoom(-that.options.zoomFactor); });
 
       that.cropControlZoomIn = that.cropControlsCrop.find('.cropControlRotateLeft');
       that.cropControlZoomIn.on('click', function() { that.rotate(-that.options.rotateFactor); });
@@ -446,7 +463,7 @@
       that.cropControlCrop.on('click',function(){ that.crop(); });
 
       that.cropControlReset = that.cropControlsCrop.find('.cropControlReset');
-      that.cropControlReset.on('click',function(){ that.reset(); });				
+      that.cropControlReset.on('click',function(){ that.reset(); });
 
     },
     initDrag:function(){
@@ -548,7 +565,7 @@
 
       if( newWidth < that.objW || newHeight < that.objH){
 
-        if( newWidth - that.objW < newHeight - that.objH ){ 
+        if( newWidth - that.objW < newHeight - that.objH ){
           newWidth = that.objW;
           newHeight = newWidth/ratio;
         }else{
@@ -558,11 +575,11 @@
 
         doPositioning = false;
 
-      } 
+      }
 
       if(!that.options.scaleToFill && (newWidth > that.imgInitW || newHeight > that.imgInitH)){
 
-        if( newWidth - that.imgInitW < newHeight - that.imgInitH ){ 
+        if( newWidth - that.imgInitW < newHeight - that.imgInitH ){
           newWidth = that.imgInitW;
           newHeight = newWidth/ratio;
         }else{
@@ -575,10 +592,10 @@
       }
 
       that.imgW = newWidth;
-      that.img.width(newWidth); 
+      that.img.width(newWidth);
 
       that.imgH = newHeight;
-      that.img.height(newHeight); 
+      that.img.height(newHeight);
 
       var newTop = parseInt( that.img.css('top') ) - x/2;
       var newLeft = parseInt( that.img.css('left') ) - x/2;
@@ -590,16 +607,16 @@
       var maxLeft = -( newWidth-that.objW); if( newLeft < maxLeft){	newLeft = maxLeft;	}
 
       if( doPositioning ){
-        that.img.css({'top':newTop, 'left':newLeft}); 
+        that.img.css({'top':newTop, 'left':newLeft});
       }
 
       if(that.options.imgEyecandy){
         that.imgEyecandy.width(newWidth);
         that.imgEyecandy.height(newHeight);
         if( doPositioning ){
-          that.imgEyecandy.css({'top':newTop, 'left':newLeft}); 
+          that.imgEyecandy.css({'top':newTop, 'left':newLeft});
         }
-      }	
+      }
 
       if (that.options.onImgZoom) that.options.onImgZoom.call(that);
 
@@ -627,95 +644,123 @@
 
       var formData;
 
-      if(typeof FormData == 'undefined'){
-        var XHR = new XMLHttpRequest();
-        var urlEncodedData = "";
-        var urlEncodedDataPairs = [];
-
-        for(var key in cropData) {
-          urlEncodedDataPairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(cropData[key]));
+      if(that.options.passthrough) {
+        if (that.options.yieldCropData !== 'undefined') {
+          that.options.yieldCropData(cropData);
+          that.afterCrop(cropData);
         }
-        for(var key in that.options.cropData) {
-          urlEncodedDataPairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(that.options.cropData[key]));
-        }
-        urlEncodedData  = urlEncodedDataPairs.join('&').replace(/%20/g, '+');
-
-        XHR.addEventListener('error', function(event) {
-          if (that.options.onError) that.options.onError.call(that,"XHR Request failed");
-        });
-        XHR.onreadystatechange=function(){
-          if (XHR.readyState==4 && XHR.status==200)
-          {
-            that.afterCrop(XHR.responseText);
-          }
-        }
-        XHR.open('POST', that.options.cropUrl);
-
-        XHR.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        XHR.setRequestHeader('Content-Length', urlEncodedData.length);
-
-        XHR.send(urlEncodedData);
-
       }else{
-        formData = new FormData();
-        for (var key in cropData) {				
-          if( cropData.hasOwnProperty(key) ) {
-            formData.append( key , cropData[key] );
+        if(typeof FormData == 'undefined'){
+          var XHR = new XMLHttpRequest();
+          var urlEncodedData = "";
+          var urlEncodedDataPairs = [];
+
+          for(var key in cropData) {
+            urlEncodedDataPairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(cropData[key]));
           }
-        }
-
-        for (var key in that.options.cropData) {
-          if( that.options.cropData.hasOwnProperty(key) ) {
-            formData.append( key , that.options.cropData[key] );
+          for(var key in that.options.cropData) {
+            urlEncodedDataPairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(that.options.cropData[key]));
           }
+          urlEncodedData  = urlEncodedDataPairs.join('&').replace(/%20/g, '+');
+
+          XHR.addEventListener('error', function(event) {
+            if (that.options.onError) that.options.onError.call(that,"XHR Request failed");
+          });
+          XHR.onreadystatechange=function(){
+            if (XHR.readyState==4 && XHR.status==200)
+            {
+              that.afterCrop(XHR.responseText);
+            }
+          }
+          XHR.open('POST', that.options.cropUrl);
+
+          XHR.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+          XHR.setRequestHeader('Content-Length', urlEncodedData.length);
+
+          XHR.send(urlEncodedData);
+
+        }else{
+          formData = new FormData();
+          for (var key in cropData) {
+            if( cropData.hasOwnProperty(key) ) {
+              formData.append( key , cropData[key] );
+            }
+          }
+
+          for (var key in that.options.cropData) {
+            if( that.options.cropData.hasOwnProperty(key) ) {
+              formData.append( key , that.options.cropData[key] );
+            }
+          }
+
+          $.ajax({
+            url: that.options.cropUrl,
+            data: formData,
+            context: document.body,
+            cache: false,
+            contentType: false,
+            processData: false,
+            type: 'POST'
+          }).always(function (data) {
+            that.afterCrop(data);
+          });
         }
-
-        $.ajax({
-          url: that.options.cropUrl,
-          data: formData,
-          context: document.body,
-          cache: false,
-          contentType: false,
-          processData: false,
-          type: 'POST'				
-        }).always(function (data) {
-
-          that.afterCrop(data);
-
-        });
       }
-
       //
     },
     afterCrop: function (data) {
       var that = this;
-      try {
-        response = jQuery.parseJSON(data);           	
-      }
-      catch(err) {
-        response = typeof data =='object' ? data : jQuery.parseJSON(data);           	
-      }	    
 
-      if (response.status == 'success') {
-
-        if (that.options.imgEyecandy)
-          that.imgEyecandy.hide();
-
+      if (that.options.passthrough) {
         that.destroy();
 
-        that.obj.append('<img class="croppedImg" src="' + response.url + '">');
-        if (that.options.outputUrlId !== '') { $('#' + that.options.outputUrlId).val(response.url); }
+        var customImageDiv = that.options.customImgOutput ? that.options.customImgOutputTarget : that.obj;
 
-        that.croppedImg = that.obj.find('.croppedImg');
+        customImageDiv.append('<img class="croppedImg" src="' + that.imgUrl +'">');
+
+        that.croppedImg = customImageDiv.find('.croppedImg');
+        croppedImgCSS = {
+          height: data.imgH+'px',
+          width: data.imgW+'px',
+          top: -data.imgY1+'px',
+          left: -data.imgX1+'px',
+          position: 'relative'
+        };
+        that.croppedImg.css(croppedImgCSS);
+        $('#croppedImgContainer').css({overflow: 'hidden', position: 'relative', height: data.cropH, width: data.cropW});
 
         that.init();
+        that.hideLoader();
 
-        that.hideLoader();
-      }
-      if (response.status == 'error') {
-        if (that.options.onError) that.options.onError.call(that,response.message);
-        that.hideLoader();
-        setTimeout( function(){ that.reset(); },2000)	
+      }else{
+        try {
+          response = jQuery.parseJSON(data);
+        }
+        catch(err) {
+          response = typeof data =='object' ? data : jQuery.parseJSON(data);
+        }
+
+        if (response.status == 'success') {
+
+          if (that.options.imgEyecandy)
+            that.imgEyecandy.hide();
+
+          that.destroy();
+
+          that.obj.append('<img class="croppedImg" src="' + response.url + '">');
+          if (that.options.outputUrlId !== '') { $('#' + that.options.outputUrlId).val(response.url); }
+
+          that.croppedImg = that.obj.find('.croppedImg');
+
+          that.init();
+
+          that.hideLoader();
+        }
+        if (response.status == 'error') {
+          if (that.options.onError) that.options.onError.call(that,response.message);
+          that.hideLoader();
+          setTimeout( function(){ that.reset(); },2000)
+        }
       }
 
       if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that, response);
@@ -729,7 +774,7 @@
     },
     hideLoader:function(){
       var that = this;
-      that.loader.remove();	
+      that.loader.remove();
     },
     reset:function(){
       var that = this;
@@ -737,8 +782,8 @@
 
       that.init();
 
-      if( !$.isEmptyObject(that.croppedImg)){ 
-        that.obj.append(that.croppedImg); 
+      if( !$.isEmptyObject(that.croppedImg)){
+        that.obj.append(that.croppedImg);
         if(that.options.outputUrlId !== ''){	$('#'+that.options.outputUrlId).val(that.croppedImg.attr('url'));	}
       }
       if (typeof that.options.onReset == 'function')
@@ -748,10 +793,10 @@
       var that = this;
       if(that.options.modal && !$.isEmptyObject(that.modal) ){ that.destroyModal(); }
       if(that.options.imgEyecandy && !$.isEmptyObject(that.imgEyecandy) ){  that.destroyEyecandy(); }
-      if( !$.isEmptyObject( that.cropControlsUpload ) ){  that.cropControlsUpload.remove(); }
+      if( !$.isEmptyObject( that.cropControlsUpload ) ){ that.cropControlsUpload.remove(); }
       if( !$.isEmptyObject( that.cropControlsCrop ) ){   that.cropControlsCrop.remove(); }
       if( !$.isEmptyObject( that.loader ) ){   that.loader.remove(); }
-      if( !$.isEmptyObject( that.form ) ){   that.form.remove(); }
+      if( !$.isEmptyObject( that.form ) && !that.options.passthrough ){ that.form.remove(); }
       that.obj.html('');
     },
     isAjaxUploadSupported: function () {
@@ -765,9 +810,9 @@
         typeof (new XMLHttpRequest()).upload != "undefined");
     },
     CreateFallbackIframe: function () {
-      var that = this;        
+      var that = this;
 
-      if (!that.isAjaxUploadSupported()) { 
+      if (!that.isAjaxUploadSupported()) {
 
         if (jQuery.isEmptyObject(that.iframeobj)) {
           var iframe = document.createElement("iframe");
@@ -787,7 +832,7 @@
           + '<html><head><title>Uploading File</title></head>'
           + '<body>'
           + '<form '
-          + 'class="' + that.id + '_upload_iframe_form" '                               
+          + 'class="' + that.id + '_upload_iframe_form" '
           + 'name="' + that.id + '_upload_iframe_form" '
           + 'action="' + that.options.uploadUrl + '" method="post" '
           + 'enctype="multipart/form-data" encoding="multipart/form-data" style="display:none;">'
@@ -798,10 +843,10 @@
         iframe.contentWindow.document.write(myContent);
         iframe.contentWindow.document.close();
 
-        that.iframeobj = $("#" + that.id + "_upload_iframe");                
+        that.iframeobj = $("#" + that.id + "_upload_iframe");
         that.iframeform = that.iframeobj.contents().find("html").find("." + that.id + "_upload_iframe_form");
 
-        that.iframeform.on("change", "input", function () {                   
+        that.iframeform.on("change", "input", function () {
           that.SubmitFallbackIframe(that);
         });
         that.iframeform.find("input")[0].attachEvent("onchange", function () {
@@ -833,7 +878,7 @@
       }
 
     },
-    SubmitFallbackIframe: function (that) {           
+    SubmitFallbackIframe: function (that) {
       that.showLoader();
       if(that.options.processInline && !that.options.uploadUrl){
         if (that.options.onError){
@@ -841,12 +886,12 @@
           that.hideLoader();
         }
       }else{
-        if (that.options.onBeforeImgUpload) that.options.onBeforeImgUpload.call(that);			
+        if (that.options.onBeforeImgUpload) that.options.onBeforeImgUpload.call(that);
         that.iframeform[0].submit();
-      }						
+      }
     },
     getIframeContentJSON: function (iframe) {
-      try {                
+      try {
         var doc = iframe.contentDocument ? iframe.contentDocument : iframe.contentWindow.document,
           response;
 
