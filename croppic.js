@@ -192,7 +192,8 @@
 
       }
 
-      that.form.find('input[type="file"]').change(function(){
+      that.form.find('input[type="file"]').off('change');
+      that.form.find('input[type="file"]').on('change',function(){
         if (that.options.onBeforeImgUpload) that.options.onBeforeImgUpload.call(that);
 
         that.showLoader();
@@ -646,7 +647,7 @@
 
       if(that.options.passthrough) {
         if (that.options.yieldCropData !== 'undefined') {
-          that.options.yieldCropData(cropData);
+          that.options.yieldCropData(this.form, cropData);
           that.afterCrop(cropData);
         }
       }else{
@@ -710,11 +711,14 @@
     },
     afterCrop: function (data) {
       var that = this;
+      var customImgOutput;
 
       if (that.options.passthrough) {
         that.destroy();
 
-        var customImageDiv = that.options.customImgOutput ? that.options.customImgOutputTarget : that.obj;
+        if (that.options.customImgOutput) customImgOutput = that.form.find(that.options.customImgOutputTarget)
+
+        var customImageDiv = customImgOutput || that.obj;
 
         customImageDiv.append('<img class="croppedImg" src="' + that.imgUrl +'">');
 
@@ -732,7 +736,7 @@
 
         that.init();
         that.hideLoader();
-
+        if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that);
       }else{
         try {
           response = jQuery.parseJSON(data);
@@ -762,10 +766,10 @@
           that.hideLoader();
           setTimeout( function(){ that.reset(); },2000)
         }
+        if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that, response);
       }
-
-      if (that.options.onAfterImgCrop) that.options.onAfterImgCrop.call(that, response);
-    },
+    }
+    ,
     showLoader:function(){
       var that = this;
 
