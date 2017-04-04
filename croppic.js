@@ -227,7 +227,9 @@
 
               }
             };
-            reader.readAsDataURL(that.form.find('input[type="file"]')[0].files[0]);
+            if (that.form.find('input[type="file"]')[0].files.length > 0){
+              reader.readAsDataURL(that.form.find('input[type="file"]')[0].files[0]);
+            }
           }
         } else {
 
