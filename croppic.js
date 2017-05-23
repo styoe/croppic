@@ -55,7 +55,6 @@
 
 		// OVERWRITE DEFAULT OPTIONS
 		for (i in options) that.options[i] = options[i];
-console.log(options);
 		// INIT THE WHOLE DAMN THING!!!
 		that.init();
 		
