@@ -1,7 +1,7 @@
 /*
  * CROPPIC
  * dependancy: jQuery
- * author: Ognjen "Zmaj Džedaj" Božičković and Mat Steinlin
+ * author: Ognjen "Zmaj Dzedaj" Bozickovic and Mat Steinlin
  */
 
 (function (window, document) {
@@ -10,7 +10,7 @@
 
 		var that = this;
 		that.id = id;
-		that.obj = $('#' + id);
+		that.obj = jQuery('#' + id);
 		that.outputDiv = that.obj;
 
 		// DEFAULT OPTIONS
@@ -23,7 +23,9 @@
 			//styles
 			imgEyecandy:true,
 			imgEyecandyOpacity:0.2,
-			initialZoom:40,
+			initialZoom:0,
+			initialLeft:0,
+			initialTop:0,
 			zoomFactor:10,
 			rotateFactor:5,
 			doubleZoomControls:true,
@@ -34,6 +36,7 @@
 			scaleToFill: true,
 			processInline: false,
 			loadPicture:'',
+            loadCroppedPicture:'',
 			onReset: null,
 			enableMousescroll: false, 			
 			
@@ -53,7 +56,6 @@
 
 		// OVERWRITE DEFAULT OPTIONS
 		for (i in options) that.options[i] = options[i];
-
 		// INIT THE WHOLE DAMN THING!!!
 		that.init();
 		
@@ -69,7 +71,7 @@
 		objH:0,
 		actualRotation: 0,
 		windowW:0,
-		windowH:$(window).height(),
+		windowH:jQuery(window).height(),
 		obj:{},
 		outputDiv:{},
 		outputUrlObj:{},
@@ -101,11 +103,12 @@
 			// reset rotation
 			that.actualRotation = 0;
 			
-			if( $.isEmptyObject(that.defaultImg)){ that.defaultImg = that.obj.find('img'); }
+			if( jQuery.isEmptyObject(that.defaultImg)){ that.defaultImg = that.obj.find('img'); }
+            if( !jQuery.isEmptyObject(that.options.loadCroppedPicture)){ that.loadCroppedImg(that.options.loadCroppedPicture) }
 			
 			that.createImgUploadControls();
 			
-			if( $.isEmptyObject(that.options.loadPicture)){				
+			if( jQuery.isEmptyObject(that.options.loadPicture)){				
 				that.bindImgUploadControl();
 			}else{				
 				that.loadExistingImage();
@@ -119,8 +122,8 @@
 			if(that.options.customUploadButtonId ===''){ cropControlUpload = '<i class="cropControlUpload"></i>'; }
 			var cropControlRemoveCroppedImage = '<i class="cropControlRemoveCroppedImage"></i>';
 			
-			if( $.isEmptyObject(that.croppedImg)){ cropControlRemoveCroppedImage=''; }
-			if( !$.isEmptyObject(that.options.loadPicture)){ cropControlUpload='';}
+			if( jQuery.isEmptyObject(that.croppedImg)){ cropControlRemoveCroppedImage=''; }
+			if( !jQuery.isEmptyObject(that.options.loadPicture)){ cropControlUpload='';}
 
 			var html =    '<div class="cropControls cropControlsUpload"> ' + cropControlUpload + cropControlRemoveCroppedImage + ' </div>';
 			that.outputDiv.append(html);
@@ -128,9 +131,9 @@
 			that.cropControlsUpload = that.outputDiv.find('.cropControlsUpload');
 			
 			if(that.options.customUploadButtonId ===''){ that.imgUploadControl = that.outputDiv.find('.cropControlUpload'); }
-			else{	that.imgUploadControl = $('#'+that.options.customUploadButtonId); that.imgUploadControl.show();	}
+			else{	that.imgUploadControl = jQuery('#'+that.options.customUploadButtonId); that.imgUploadControl.show();	}
 
-			if( !$.isEmptyObject(that.croppedImg)){
+			if( !jQuery.isEmptyObject(that.croppedImg)){
 				that.cropControlRemoveCroppedImage = that.outputDiv.find('.cropControlRemoveCroppedImage');
 			}
 			
@@ -158,7 +161,7 @@
                 }									
 			});						
 			
-			if( !$.isEmptyObject(that.croppedImg)){
+			if( !jQuery.isEmptyObject(that.croppedImg)){
 			
 				that.cropControlRemoveCroppedImage.on('click',function(){ 
 					if (typeof (that.options.onBeforeRemoveCroppedImg) === typeof(Function)) {
@@ -167,17 +170,17 @@
 					
 					that.croppedImg.remove();
 					that.croppedImg = {};
-					$(this).hide();
+					jQuery(this).hide();
 					
 					if (typeof (that.options.onAfterRemoveCroppedImg) === typeof(Function)) {
 						that.options.onAfterRemoveCroppedImg.call(that);
 					}
 					
-					if( !$.isEmptyObject(that.defaultImg)){ 
+					if( !jQuery.isEmptyObject(that.defaultImg)){ 
 						that.obj.append(that.defaultImg);
 					}
 					
-					if(that.options.outputUrlId !== ''){	$('#'+that.options.outputUrlId).val('');	}
+					if(that.options.outputUrlId !== ''){	jQuery('#'+that.options.outputUrlId).val('');	}
 				
 				});	
 			
@@ -205,7 +208,7 @@
 								that.imgInitH = that.imgH = image.height;
 
 								if(that.options.modal){	that.createModal(); }
-								if( !$.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
+								if( !jQuery.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
 								
 								that.imgUrl=image.src;
 								
@@ -238,7 +241,7 @@
 						}
 					}										
 					
-					$.ajax({
+					jQuery.ajax({
 						url: that.options.uploadUrl,
 						data: formData,
 						context: document.body,
@@ -256,16 +259,16 @@
 		loadExistingImage: function(){
 			var that = this;
 			
-			if( $.isEmptyObject(that.croppedImg)){
+			if( jQuery.isEmptyObject(that.croppedImg)){
 				if (that.options.onBeforeImgUpload) that.options.onBeforeImgUpload.call(that);
 			
 				that.showLoader();
 				if(that.options.modal){	that.createModal(); }
-				if( !$.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
+				if( !jQuery.isEmptyObject(that.croppedImg)){ that.croppedImg.remove(); }
 				
 				that.imgUrl=that.options.loadPicture ;
 				
-				var img =$('<img src="'+ that.options.loadPicture +'">');
+				var img =jQuery('<img src="'+ that.options.loadPicture +'">');
 				that.obj.append(img);
 				img.load(function() {
 					that.imgInitW = that.imgW = this.width;
@@ -277,13 +280,14 @@
 						
 			}else{					
 				that.cropControlRemoveCroppedImage.on('click',function(){ 
+                    that.options.loadCroppedPicture = '';
 					that.croppedImg.remove();
-					$(this).hide();
+					jQuery(this).hide();
 					
-					if( !$.isEmptyObject(that.defaultImg)){ 
+					if( !jQuery.isEmptyObject(that.defaultImg)){ 
 						that.obj.append(that.defaultImg);
 					}					
-					if(that.options.outputUrlId !== ''){	$('#'+that.options.outputUrlId).val('');	}
+					if(that.options.outputUrlId !== ''){	jQuery('#'+that.options.outputUrlId).val('');	}
 					that.croppedImg = '';
 					that.reset();
 				});	
@@ -302,11 +306,11 @@
                 that.imgInitH = that.imgH = response.height;
 
                 if (that.options.modal) { that.createModal(); }
-                if (!$.isEmptyObject(that.croppedImg)) { that.croppedImg.remove(); }
+                if (!jQuery.isEmptyObject(that.croppedImg)) { that.croppedImg.remove(); }
 
                 that.imgUrl = response.url;
 
-                var img = $('<img src="'+response.url+'">')
+                var img = jQuery('<img src="'+response.url+'">')
 
 				that.obj.append(img);
 
@@ -334,11 +338,11 @@
 			var marginTop = that.windowH/2-that.objH/2;
 			var modalHTML =  '<div id="croppicModal">'+'<div id="croppicModalObj" style="width:'+ that.objW +'px; height:'+ that.objH +'px; margin:0 auto; margin-top:'+ marginTop +'px; position: relative;"> </div>'+'</div>';
 
-			$('body').append(modalHTML);
+			jQuery('body').append(modalHTML);
 			
-			that.modal = $('#croppicModal');
+			that.modal = jQuery('#croppicModal');
 			
-			that.obj = $('#croppicModalObj');
+			that.obj = jQuery('#croppicModalObj');
 			
 		},
 		destroyModal: function(){
@@ -385,9 +389,14 @@
 				});
 			}
 			// initial center image
-			
-			that.img.css({'left': -(that.imgW -that.objW)/2, 'top': -(that.imgH -that.objH)/2, 'position':'relative'});
-			if(that.options.imgEyecandy){ that.imgEyecandy.css({'left': -(that.imgW -that.objW)/2, 'top': -(that.imgH -that.objH)/2, 'position':'relative'}); }
+			if(that.options.initialLeft==0) {
+				that.img.css({'left': -(that.imgW -that.objW)/2, 'top': -(that.imgH -that.objH)/2, 'position':'relative'});
+				if(that.options.imgEyecandy){ that.imgEyecandy.css({'left': -(that.imgW -that.objW)/2, 'top': -(that.imgH -that.objH)/2, 'position':'relative'}); }
+	
+			} else {
+				that.img.css({'left': that.options.initialLeft, 'top': that.options.initialTop, 'position':'relative'});
+				if(that.options.imgEyecandy){ that.imgEyecandy.css({'left': that.options.initialLeft, 'top': that.options.initialTop, 'position':'relative'}); }
+			}
 			
 		},
 		
@@ -400,8 +409,8 @@
 			var cropControlZoomOut =         '<i class="cropControlZoomOut"></i>';
 			var cropControlZoomMuchOut =     '';
 			var cropControlRotateLeft =      '';
-	        var cropControlRotateRight =     '';
-	        var cropControlCrop =            '<i class="cropControlCrop"></i>';
+			var cropControlRotateRight =     '';
+			var cropControlCrop =            '<i class="cropControlCrop"></i>';
 			var cropControlReset =           '<i class="cropControlReset"></i>';
 			
             var html;
@@ -490,7 +499,7 @@
 						top:imgTop,
 						left:imgLeft
 					}).on("mouseup", function() {
-						$(this).removeClass('draggable').css('z-index', z_idx);
+						jQuery(this).removeClass('draggable').css('z-index', z_idx);
 					});
 					
 					if(that.options.imgEyecandy){ that.imgEyecandy.offset({ top:imgTop, left:imgLeft }); }
@@ -670,7 +679,7 @@
 					}
 				}
 				
-				$.ajax({
+				jQuery.ajax({
 					url: that.options.cropUrl,
 					data: formData,
 					context: document.body,
@@ -687,6 +696,14 @@
 						
 			//
         },
+        loadCroppedImg: function (croppedUrl) {
+            var that = this;
+
+            that.obj.append('<img class="croppedImg" src="' + croppedUrl + '">');
+            if (that.options.outputUrlId !== '') { jQuery('#' + that.options.outputUrlId).val(croppedUrl); }
+
+            that.croppedImg = that.obj.find('.croppedImg');
+        },
 		afterCrop: function (data) {
             var that = this;
 			try {
@@ -702,12 +719,7 @@
 					that.imgEyecandy.hide();
 
                 that.destroy();
-				
-                that.obj.append('<img class="croppedImg" src="' + response.url + '">');
-                if (that.options.outputUrlId !== '') { $('#' + that.options.outputUrlId).val(response.url); }
-
-                that.croppedImg = that.obj.find('.croppedImg');
-
+                that.loadCroppedImg(response.url);
                 that.init();
 
                 that.hideLoader();
@@ -737,21 +749,21 @@
 			
 			that.init();
 			
-			if( !$.isEmptyObject(that.croppedImg)){ 
+			if( !jQuery.isEmptyObject(that.croppedImg)){ 
 				that.obj.append(that.croppedImg); 
-				if(that.options.outputUrlId !== ''){	$('#'+that.options.outputUrlId).val(that.croppedImg.attr('url'));	}
+				if(that.options.outputUrlId !== ''){	jQuery('#'+that.options.outputUrlId).val(that.croppedImg.attr('url'));	}
 			}
 			if (typeof that.options.onReset == 'function')
                 that.options.onReset.call(that);
 		},
 		destroy:function(){
 			var that = this;
-			if(that.options.modal && !$.isEmptyObject(that.modal) ){ that.destroyModal(); }
-			if(that.options.imgEyecandy && !$.isEmptyObject(that.imgEyecandy) ){  that.destroyEyecandy(); }
-			if( !$.isEmptyObject( that.cropControlsUpload ) ){  that.cropControlsUpload.remove(); }
-			if( !$.isEmptyObject( that.cropControlsCrop ) ){   that.cropControlsCrop.remove(); }
-			if( !$.isEmptyObject( that.loader ) ){   that.loader.remove(); }
-			if( !$.isEmptyObject( that.form ) ){   that.form.remove(); }
+			if(that.options.modal && !jQuery.isEmptyObject(that.modal) ){ that.destroyModal(); }
+			if(that.options.imgEyecandy && !jQuery.isEmptyObject(that.imgEyecandy) ){  that.destroyEyecandy(); }
+			if( !jQuery.isEmptyObject( that.cropControlsUpload ) ){  that.cropControlsUpload.remove(); }
+			if( !jQuery.isEmptyObject( that.cropControlsCrop ) ){   that.cropControlsCrop.remove(); }
+			if( !jQuery.isEmptyObject( that.loader ) ){   that.loader.remove(); }
+			if( !jQuery.isEmptyObject( that.form ) ){   that.form.remove(); }
 			that.obj.html('');
 		},
 		isAjaxUploadSupported: function () {
@@ -791,14 +803,14 @@
                                 + 'name="' + that.id + '_upload_iframe_form" '
                                 + 'action="' + that.options.uploadUrl + '" method="post" '
                                 + 'enctype="multipart/form-data" encoding="multipart/form-data" style="display:none;">'
-                                + $("#" + that.id + '_imgUploadField')[0].outerHTML
+                                + jQuery("#" + that.id + '_imgUploadField')[0].outerHTML
                                 + '</form></body></html>';
 
                 iframe.contentWindow.document.open('text/htmlreplace');
                 iframe.contentWindow.document.write(myContent);
                 iframe.contentWindow.document.close();
 
-                that.iframeobj = $("#" + that.id + "_upload_iframe");                
+                that.iframeobj = jQuery("#" + that.id + "_upload_iframe");                
                 that.iframeform = that.iframeobj.contents().find("html").find("." + that.id + "_upload_iframe_form");
                 
                 that.iframeform.on("change", "input", function () {                   
