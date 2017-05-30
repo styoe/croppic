@@ -36,6 +36,7 @@
 			scaleToFill: true,
 			processInline: false,
 			loadPicture:'',
+            loadCroppedPicture:'',
 			onReset: null,
 			enableMousescroll: false, 			
 			
@@ -103,6 +104,7 @@
 			that.actualRotation = 0;
 			
 			if( jQuery.isEmptyObject(that.defaultImg)){ that.defaultImg = that.obj.find('img'); }
+            if( !jQuery.isEmptyObject(that.options.loadCroppedPicture)){ that.loadCroppedImg(that.options.loadCroppedPicture) }
 			
 			that.createImgUploadControls();
 			
@@ -278,6 +280,7 @@
 						
 			}else{					
 				that.cropControlRemoveCroppedImage.on('click',function(){ 
+                    that.options.loadCroppedPicture = '';
 					that.croppedImg.remove();
 					jQuery(this).hide();
 					
@@ -406,8 +409,8 @@
 			var cropControlZoomOut =         '<i class="cropControlZoomOut"></i>';
 			var cropControlZoomMuchOut =     '';
 			var cropControlRotateLeft =      '';
-	        var cropControlRotateRight =     '';
-	        var cropControlCrop =            '';
+			var cropControlRotateRight =     '';
+			var cropControlCrop =            '<i class="cropControlCrop"></i>';
 			var cropControlReset =           '<i class="cropControlReset"></i>';
 			
             var html;
@@ -693,6 +696,14 @@
 						
 			//
         },
+        loadCroppedImg: function (croppedUrl) {
+            var that = this;
+
+            that.obj.append('<img class="croppedImg" src="' + croppedUrl + '">');
+            if (that.options.outputUrlId !== '') { jQuery('#' + that.options.outputUrlId).val(croppedUrl); }
+
+            that.croppedImg = that.obj.find('.croppedImg');
+        },
 		afterCrop: function (data) {
             var that = this;
 			try {
@@ -708,12 +719,7 @@
 					that.imgEyecandy.hide();
 
                 that.destroy();
-				
-                that.obj.append('<img class="croppedImg" src="' + response.url + '">');
-                if (that.options.outputUrlId !== '') { jQuery('#' + that.options.outputUrlId).val(response.url); }
-
-                that.croppedImg = that.obj.find('.croppedImg');
-
+                that.loadCroppedImg(response.url);
                 that.init();
 
                 that.hideLoader();
