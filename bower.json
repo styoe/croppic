@@ -9,7 +9,7 @@
   "description": "The image cropping jquery plugin that will satisfy your needs and much more",  
   "license": "MIT",  
   "main": [
-    "croppic.min.js",
+    "croppic.js",
     "assets/css/croppic.css"
   ],
   "keywords": [
