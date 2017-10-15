@@ -267,13 +267,14 @@
 				
 				var img =$('<img src="'+ that.options.loadPicture +'">');
 				that.obj.append(img);
-				img.load(function() {
-					that.imgInitW = that.imgW = this.width;
-					that.imgInitH = that.imgH = this.height;
-					that.initCropper();
-					that.hideLoader();
-					if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
-				});	
+				var image = new Image();
+				image.src = that.options.loadPicture;
+				that.imgInitW = that.imgW = image.width;
+				that.imgInitH = that.imgH = image.height;
+				that.initCropper();
+				that.hideLoader();
+				if (that.options.onAfterImgUpload) that.options.onAfterImgUpload.call(that);
+				
 						
 			}else{					
 				that.cropControlRemoveCroppedImage.on('click',function(){ 
