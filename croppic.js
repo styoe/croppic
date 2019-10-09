@@ -36,6 +36,7 @@
 			onReset: null,
 			enableMousescroll: false, 			
 			fitToLongest: false,
+			fitToCover: false,
 			
 			//callbacks
 			onBeforeImgUpload: null,
@@ -358,6 +359,12 @@
 			
 			// Resize image to fit object's longest side
 			var resize = function(newTop, newLeft, newWidth, newHeight) {
+				that.imgW = newWidth;
+				that.img.width(newWidth); 
+				
+				that.imgH = newHeight;
+				that.img.height(newHeight); 
+				
 				that.img.css({
 					'top': newTop,
 					'left': newLeft
@@ -378,12 +385,6 @@
 				var newWidth = that.objW;
 				var newHeight = (newWidth / ratio);
 				
-				that.imgW = newWidth;
-				that.img.width(newWidth); 
-				
-				that.imgH = newHeight;
-				that.img.height(newHeight); 
-				
 				var newTop = that.objH - (newHeight / 2);
 				var newLeft = 0;
 				
@@ -397,12 +398,6 @@
 				var ratio = (newHeight / that.imgH);
 				var newWidth = (that.imgW * ratio);
 				
-				that.imgW = newWidth;
-				that.img.width(newWidth); 
-				
-				that.imgH = newHeight;
-				that.img.height(newHeight); 
-				
 				var newTop = 0;
 				var newLeft = (that.objW / 2) - (newWidth / 2);
 				
@@ -410,6 +405,45 @@
 				
 				resize(newTop, newLeft, newWidth, newHeight);
 			};
+			
+			var resizeToCover = function() {
+				var sourceWidth  = that.imgW;
+				var sourceHeight = that.imgH;
+				var destWidth    = that.objW;
+				var destHeight   = that.objH;
+				
+				var result = { 
+					x: 0, 
+					y: 0, 
+					width: destWidth, 
+					height: destHeight 
+				};
+				
+				var scaleX = (that.objW / that.imgW);
+				var scaleY = (that.objH / that.imgH);
+				var scale  = ((scaleX > scaleY) ? scaleX : scaleY);
+				
+				sourceWidth *= scale;
+				sourceHeight *= scale;
+				
+				result.width = Math.round(sourceWidth);
+				result.height = Math.round(sourceHeight);
+				
+				result.x = Math.round((destWidth / 2) - (sourceWidth / 2));
+				result.y = Math.round((destHeight / 2) - (sourceHeight / 2));
+				
+				resize(
+					result.y,
+					result.x,
+					result.width,
+					result.height
+				);
+			};
+			
+			if (that.options.fitToCover) {
+				that.options.fitToLongest = false;
+				resizeToCover();
+			}
 			
 			if (that.options.fitToLongest) {
 				if (that.objW >= that.objH) {
